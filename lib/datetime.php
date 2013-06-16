@@ -58,6 +58,7 @@ function checkday() {
   $result = db_query($sql);
   $row = db_fetch_assoc($result);
   $max_dk = $row["dragonkills"];
+  $dk_needed = get_module_setting("dk_needed", "final");
   /* Ciuf } */
 	if ($session['user']['loggedin']){
 		output_notl("<!--CheckNewDay()-->",true);
@@ -69,8 +70,8 @@ function checkday() {
 			redirect("newday.php");
     }
     /* Ciuf { */
-    else if($max_dk >= get_module_setting("dk_needed", "final")){
-      output("`EW tym miejscu powinien wyskoczyc `gSMOK`E! (limit `E%d`e bossow zostal osiagniety), chociaz, `Gget_module_setting `Ezwraca `GNULL`n`n", get_module_setting("dk_needed", "final"));
+    else if($max_dk >= $dk_needed){
+      output("`EW tym miejscu powinien wyskoczyc `gSMOK`E! (limit `E$dk_needed`e bossow zostal osiagniety (`E$max_dk`e))`n`n");
       addnav("","runmodule.php?module=final");
       rawoutput("<a href='runmodule.php?module=final'>DO SMOKA</a>");
     }

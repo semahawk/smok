@@ -15,7 +15,7 @@ function final_getmoduleinfo()
     "settings" => array (
       "Legendarny Smok,title",
       "dev" => "Wersja developerska,bool|true",
-      "bk_needed" => "Ilosc zabitych bossow potrzebnych do wywolania walki,int|500",
+      "dk_needed" => "Ilosc zabitych bossow potrzebnych do wywolania walki,int|500",
     ),
     "prefs" => array (
       "Final fight - user prefs,title",
