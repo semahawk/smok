@@ -29,7 +29,7 @@ function reltime($date,$short=true){
 		elseif ($m > 0)
 			$o = "$m minute".($m>1?"s":"").($s>0?", $s second".($s>1?"s":""):"");
 		else
-			$o = $s." second".($s>0?"s":"");		
+			$o = $s." second".($s>0?"s":"");
 	}
 	return $o;
 }
@@ -53,6 +53,12 @@ function relativedate($indate){
 
 function checkday() {
 	global $session,$revertsession,$REQUEST_URI;
+  /* Ciuf { */
+  $sql = "SELECT dragonkills FROM " . db_prefix("accounts") . " ORDER BY dragonkills DESC LIMIT 1";
+  $result = db_query($sql);
+  $row = db_fetch_assoc($result);
+  $max_dk = $row["dragonkills"];
+  /* Ciuf } */
 	if ($session['user']['loggedin']){
 		output_notl("<!--CheckNewDay()-->",true);
 		if(is_new_day()){
@@ -61,13 +67,20 @@ function checkday() {
 			$session['allowednavs']=array();
 			addnav("","newday.php");
 			redirect("newday.php");
-		}
+    }
+    /* Ciuf { */
+    else if($max_dk >= get_module_setting("dk_needed", "final")){
+      output("`EW tym miejscu powinien wyskoczyc `gSMOK`E! (limit `E%d`e bossow zostal osiagniety), chociaz, `Gget_module_setting `Ezwraca `GNULL`n`n", get_module_setting("dk_needed", "final"));
+      addnav("","runmodule.php?module=final");
+      rawoutput("<a href='runmodule.php?module=final'>DO SMOKA</a>");
+    }
+    /* Ciuf } */
 	}
 }
 
 function is_new_day($now=0){
 	global $session;
-	
+
 	if ($session['user']['lasthit'] == "0000-00-00 00:00:00") {
 		return true;
 	}
@@ -75,7 +88,7 @@ function is_new_day($now=0){
 	$t2 = convertgametime(strtotime($session['user']['lasthit']." +0000"));
 	$d1 = gmdate("Y-m-d",$t1);
 	$d2 = gmdate("Y-m-d",$t2);
-	
+
 	if ($d1!=$d2){
 		return true;
 	}
