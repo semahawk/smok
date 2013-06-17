@@ -89,17 +89,27 @@ function boss_run()
   $op = httpget('op');
   $here = "runmodule.php?module=boss";
   $bname = get_module_pref("badguy_name");
+  $bweap = get_module_pref("badguy_weapon");
 
-  page_header($bname . "!");
+  page_header("[FIXME] Boss!");
 
   switch ($op){
     case "enter":
-      output("`c`GWYCZESANY `Etekst o tym jak to chcesz dowalic bossowi ale sie cykasz i nie jestes pewien`c");
+      /* zgarniamy losowego bossa */
+      $sql = "SELECT * FROM " . db_prefix("bosses") . " ORDER BY RAND() LIMIT 1;";
+      $res = db_query($sql);
+      $row = db_fetch_assoc($res);
+      /* zapisać go w ustawieniach */
+      set_module_pref("badguy_name", $row['bossname']);
+      set_module_pref("badguy_weapon", $row['bossweapon']);
+      output("`c`GWYCZESANY `Etekst o tym jak to chcesz dowalic `GBOSSOWI `Eale sie cykasz i nie jestes pewien`c", get_module_pref("badguy_name"), get_module_pref("badguy_weapon"));
       addnav("Zmierz sie z bossem", "$here&op=fight");
       addnav("Bierz tylek w troki", "$here&op=flee");
       break;
     case "fight":
-      output("`c`ETutaj `GEPICKA `Ewalka z `7$bname`0`c");
+      output("`c`ETutaj `GEPICKA `Ewalka z `G$bname`E, ktory ma `G$bweap`0`c");
+      /* DEV */
+      villagenav();
       break;
     case "flee":
       output("`c`EStwierdzasz, ze jestes za `GMIEKKI `Ena bossa, ale jeszcze tutaj wrocisz.`c");
