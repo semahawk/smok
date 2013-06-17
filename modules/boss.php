@@ -26,6 +26,26 @@ function boss_getmoduleinfo()
 
 function boss_install()
 {
+  $sql_create = "CREATE TABLE IF NOT EXISTS " . db_prefix("bosses") . "(" .
+                  "bossid int(11) primary key auto_increment, " .
+                  "bossname varchar(255) not null, " .
+                  "bossweapon varchar(255) not null " .
+                ");\n";
+
+  db_query($sql_create);
+
+  $bosses = array(
+    "[FIXME] Szkieletor" => "[FIXME] Szkieletowate lapska",
+    "[FIXME] Mumia" => "[FIXME] Mumiowate lapska",
+    "[FIXME] Wonsz" => "[FIXME] Zemby"
+  );
+
+  /* TODO: to można by było wrzucić jako całość do jednego stringa i raz wykonać
+   *       ale czemuś, nie wiedzieć czemu, mam syntax errory */
+  foreach ($bosses as $name => $weapon){
+    db_query("INSERT INTO `" . db_prefix("bosses") . "` (bossid, bossname, bossweapon) VALUES(NULL, '$name', '$weapon');\n");
+  }
+
   module_addeventhook("forest", "return 100;");
   module_addhook("forest");
 
@@ -34,6 +54,9 @@ function boss_install()
 
 function boss_uninstall()
 {
+  $sql = "DROP TABLE IF EXISTS " . db_prefix("bosses") . ";";
+  db_query($sql);
+
   return true;
 }
 
