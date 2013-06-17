@@ -26,12 +26,18 @@ function boss_getmoduleinfo()
 
 function boss_install()
 {
+  /* dla pewności */
+  /* przy reinstallowaniu za każdym razem dodawał rekordów, których było w końcu
+   * po parę zestawów */
+  $sql_drop = "DROP TABLE IF EXISTS " . db_prefix("bosses");
+
   $sql_create = "CREATE TABLE IF NOT EXISTS " . db_prefix("bosses") . "(" .
                   "bossid int(11) primary key auto_increment, " .
                   "bossname varchar(255) not null, " .
                   "bossweapon varchar(255) not null " .
                 ");\n";
 
+  db_query($sql_drop);
   db_query($sql_create);
 
   $bosses = array(
