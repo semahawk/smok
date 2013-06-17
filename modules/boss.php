@@ -1,5 +1,11 @@
 <?php
 
+/*
+ * Author: Ciuf
+ */
+
+require_once("common.php");
+require_once("lib/fightnav.php");
 require_once("lib/villagenav.php");
 
 function boss_getmoduleinfo()
@@ -72,7 +78,7 @@ function boss_dohook($hookname, $args)
 
   switch ($hookname){
     case "forest":
-      if ($session['user']['level'] >= 15){
+      if ($session['user']['level'] >= 15 && $session['user']['seendragon'] == 0){
         /* FIXME to chyba da się znacjonalizować */
         addnav("Fight");
         addnav("`@Walcz z bossem!`0", "runmodule.php?module=boss&op=enter");
@@ -113,13 +119,34 @@ function boss_run()
       addnav("Bierz tylek w troki", "$here&op=flee");
       break;
     case "fight":
-      output("`c`ETutaj `GEPICKA `Ewalka z `G$bname`E, ktory ma `G$bweap`0`c");
-      /* DEV */
-      villagenav();
+      $badguy = array(
+        "creaturename" => get_module_pref("badguy_name"),
+        "creaturelevel" => 18,
+        "creatureweapon" => get_module_pref("badguy_weapon"),
+        "creatureattack" => 45,
+        "creaturedefense" => 25,
+        "creaturehealth" => 300,
+        "diddamage" => 0
+      );
+      /* TODO: wzmocnic tego bossa, bo teraz dupa a nie boss */
+      $session['user']['badguy'] = createstring($badguy);
+
+      require_once("battle.php");
+
+      if ($victory){
+        output("Brawo!");
+        villagenav();
+      } elseif ($defeat){
+        output("Niestety, $bossname cie pokonal");
+        villagenav();
+      } else {
+        fightnav();
+      }
       break;
     case "flee":
-      output("`c`EStwierdzasz, ze jestes za `GMIEKKI `Ena bossa, ale jeszcze tutaj wrocisz.`c");
+      output("`c`EStwierdzasz, ze jestes za `GMIEKKI `Ena bossa, ale jeszcze tutaj wrocisz.`c, po nowym dniu");
       villagenav();
+      $session['user']['seendragon'] = 1;
       break;
   }
 
