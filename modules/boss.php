@@ -128,7 +128,25 @@ function boss_run()
         "creaturehealth" => 300,
         "diddamage" => 0
       );
-      /* TODO: wzmocnic tego bossa, bo teraz dupa a nie boss */
+      $points = 0;
+      restore_buff_fields();
+      reset($session['user']['dragonpoints']);
+      while(list($key, $val) = each($session['user']['dragonpoints'])){
+        if ($val == "at" || $val == "de") $points++;
+      }
+      $points += (int)(($session['user']['maxhitpoints'] - 150) / 5);
+      $points = round($points * .75, 0);
+      $atkflux = e_rand(0, $points);
+      $defflux = e_rand(0, $points - $atkflux);
+      $hpflux = ($points - ($atkflux + $defflux)) * 5;
+      debug("DEBUG: $points modification points total.`0`n");
+      debug("DEBUG: +$atkflux allocated to attack.`n");
+      debug("DEBUG: +$defflux allocated to defense.`n");
+      debug("DEBUG: +". ($hpflux / 5) . "*5 to hitpoints.`0`n");
+      calculate_buff_fields();
+      $badguy['creatureattack'] += $atkflux;
+      $badguy['creaturedefense'] += $defflux;
+      $badguy['creaturehealth'] += $hpflux;
       $session['user']['badguy'] = createstring($badguy);
 
       require_once("battle.php");
