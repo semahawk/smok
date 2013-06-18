@@ -158,6 +158,7 @@ function boss_run()
         "password"        => 1,
         "marriedto"       => 1,
         "title"           => 1,
+        "race"            => 1,
         "login"           => 1,
         "dragonkills"     => 1,
         "locked"          => 1,
