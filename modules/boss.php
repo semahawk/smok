@@ -86,8 +86,7 @@ function boss_dohook($hookname, $args)
   switch ($hookname){
     case "forest":
       if ($session['user']['level'] >= 15 && $session['user']['seendragon'] == 0){
-        /* FIXME to chyba da się znacjonalizować */
-        addnav("Fight");
+        addnav("Walcz");
         addnav("`@Walcz z bossem!`0", "runmodule.php?module=boss&op=enter");
       }
       break;
@@ -317,6 +316,7 @@ function boss_run()
 
       if ($victory){
         output("Brawo!");
+        $session['user']['dragonkills']++;
         addnav("Kontynuuj", "$here&op=prologue1&flawless=$flawless");
       } elseif ($defeat){
         output("Niestety, $bossname cie pokonal");
