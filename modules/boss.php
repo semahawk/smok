@@ -30,7 +30,8 @@ function boss_getmoduleinfo()
     "prefs" => array (
       "Walka z bossem,title",
       "badguy_name" => "Name of the boss user would be fighting,string",
-      "badguy_weapon" => "The boss' weapon,string"
+      "badguy_weapon" => "The boss' weapon,string",
+      "badguy_desc" => "The boss' text after beating him,string",
     )
   );
 
@@ -44,25 +45,29 @@ function boss_install()
    * po parę zestawów */
   $sql_drop = "DROP TABLE IF EXISTS " . db_prefix("bosses");
 
-  $sql_create = "CREATE TABLE IF NOT EXISTS " . db_prefix("bosses") . "(" .
-                  "bossid int(11) primary key auto_increment, " .
-                  "bossname varchar(255) not null, " .
-                  "bossweapon varchar(255) not null " .
+  $sql_create = "CREATE TABLE IF NOT EXISTS " . db_prefix("bosses") . "(\n" .
+                  "bossid int(11) primary key auto_increment,\n" .
+                  "bossname varchar(255) not null,\n" .
+                  "bossweapon varchar(255) not null,\n" .
+                  "bossdesc text not null\n" .
                 ");\n";
 
   db_query($sql_drop);
   db_query($sql_create);
 
   $bosses = array(
-    "[FIXME] Szkieletor" => "[FIXME] Szkieletowate lapska",
-    "[FIXME] Mumia" => "[FIXME] Mumiowate lapska",
-    "[FIXME] Wonsz" => "[FIXME] Zemby"
+    "[FIXME] Szkieletor" => array("[FIXME] Szkieletowate lapska",
+      "`EOpis po zabiciu `GSZKIELETORA"),
+    "[FIXME] Mumia" => array("[FIXME] Mumiowate lapska",
+      "`EOpis po zabiciu `GMUMII"),
+    "[FIXME] Wonsz" => array("[FIXME] Zemby",
+      "`EOpis po zabiciu `GWENSZA")
   );
 
   /* TODO: to można by było wrzucić jako całość do jednego stringa i raz wykonać
    *       ale czemuś, nie wiedzieć czemu, mam syntax errory */
-  foreach ($bosses as $name => $weapon){
-    db_query("INSERT INTO `" . db_prefix("bosses") . "` (bossid, bossname, bossweapon) VALUES(NULL, '$name', '$weapon');\n");
+  foreach ($bosses as $name => $more){
+    db_query("INSERT INTO `" . db_prefix("bosses") . "` (bossid, bossname, bossweapon, bossdesc) VALUES(NULL, '$name', '$more[0]', '$more[1]');\n");
   }
 
   module_addeventhook("forest", "return 100;");
@@ -118,10 +123,11 @@ function boss_run()
         if ($flawless) {
         output("`b`c`&~~ Niepodwazalne Zwyciestwo ~~`0`c`b`n`n");
       }
+
       output("`GBrawo, `Epokonales bossa");
 
       if ($flawless) {
-        output("`n`nTekst o bonusie do niepowdazalnego");
+        output("`n`nTekst o bonusie do niepowazalnego");
       }
       addnav("It is a new day","news.php");
       strip_all_buffs();
@@ -145,45 +151,46 @@ function boss_run()
       $hpgain = modulehook("hprecalc", $hpgain);
       calculate_buff_fields();
 
-      $nochange = array("acctid"  => 1
-               ,"name"            => 1
-               ,"sex"             => 1
-               ,"password"        => 1
-               ,"marriedto"       => 1
-               ,"title"           => 1
-               ,"login"           => 1
-               ,"dragonkills"     => 1
-               ,"locked"          => 1
-               ,"loggedin"        => 1
-               ,"superuser"       => 1
-               ,"gems"            => 1
-               ,"hashorse"        => 1
-               ,"gentime"         => 1
-               ,"gentimecount"    => 1
-               ,"lastip"          => 1
-               ,"uniqueid"        => 1
-               ,"dragonpoints"    => 1
-               ,"laston"          => 1
-               ,"prefs"           => 1
-               ,"lastmotd"        => 1
-               ,"emailaddress"    => 1
-               ,"emailvalidation" => 1
-               ,"gensize"         => 1
-               ,"bestdragonage"   => 1
-               ,"dragonage"       => 1
-               ,"donation"        => 1
-               ,"donationspent"   => 1
-               ,"donationconfig"  => 1
-               ,"bio"             => 1
-               ,"charm"           => 1
-               ,"banoverride"     => 1
-               ,"referer"         => 1
-               ,"refererawarded"  => 1
-               ,"ctitle"          => 1
-               ,"beta"            => 1
-               ,"clanid"          => 1
-               ,"clanrank"        => 1
-               ,"clanjoindate"    => 1);
+      $nochange = array(
+        "acctid"          => 1,
+        "name"            => 1,
+        "sex"             => 1,
+        "password"        => 1,
+        "marriedto"       => 1,
+        "title"           => 1,
+        "login"           => 1,
+        "dragonkills"     => 1,
+        "locked"          => 1,
+        "loggedin"        => 1,
+        "superuser"       => 1,
+        "gems"            => 1,
+        "hashorse"        => 1,
+        "gentime"         => 1,
+        "gentimecount"    => 1,
+        "lastip"          => 1,
+        "uniqueid"        => 1,
+        "dragonpoints"    => 1,
+        "laston"          => 1,
+        "prefs"           => 1,
+        "lastmotd"        => 1,
+        "emailaddress"    => 1,
+        "emailvalidation" => 1,
+        "gensize"         => 1,
+        "bestdragonage"   => 1,
+        "dragonage"       => 1,
+        "donation"        => 1,
+        "donationspent"   => 1,
+        "donationconfig"  => 1,
+        "bio"             => 1,
+        "charm"           => 1,
+        "banoverride"     => 1,
+        "referer"         => 1,
+        "refererawarded"  => 1,
+        "ctitle"          => 1,
+        "beta"            => 1,
+        "clanid"          => 1,
+        "clanrank"        => 1,
+        "clanjoindate"    => 1);
 
       $nochange = modulehook("dk-preserve", $nochange);
 
@@ -252,7 +259,7 @@ function boss_run()
       $session['user']['laston'] = date("Y-m-d H:i:s", strtotime("-1 day"));
       $session['user']['slaydragon'] = 1;
 
-      output("`n`n`ETekst na po zabiciu bossa");
+      output("`n`n%s", get_module_pref("badguy_desc"));
 
       // allow explanative text as well.
       modulehook("dragonkilltext");
@@ -277,6 +284,7 @@ function boss_run()
       /* zapisać go w ustawieniach */
       set_module_pref("badguy_name", $row['bossname']);
       set_module_pref("badguy_weapon", $row['bossweapon']);
+      set_module_pref("badguy_desc", $row['bossdesc']);
       output("`c`GWYCZESANY `Etekst o tym jak to chcesz dowalic `GBOSSOWI `Eale sie cykasz i nie jestes pewien`c", get_module_pref("badguy_name"), get_module_pref("badguy_weapon"));
       addnav("Zmierz sie z bossem", "$here&op=fight");
       addnav("Bierz tylek w troki", "$here&op=flee");
@@ -319,7 +327,7 @@ function boss_run()
         $session['user']['dragonkills']++;
         addnav("Kontynuuj", "$here&op=prologue1&flawless=$flawless");
       } elseif ($defeat){
-        output("Niestety, $bossname cie pokonal");
+        output("Niestety, %s cie pokonal", get_module_pref("badguy_name"));
         villagenav();
       } else {
         fightnav(true, false, "$here");
