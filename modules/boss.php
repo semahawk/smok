@@ -1,12 +1,19 @@
 <?php
 
 /*
- * Author: Ciuf
+ * Autor: Ciuf
+ *
  */
 
 require_once("common.php");
+require_once("lib/titles.php");
 require_once("lib/fightnav.php");
 require_once("lib/villagenav.php");
+require_once("lib/titles.php");
+require_once("lib/http.php");
+require_once("lib/buffs.php");
+require_once("lib/taunt.php");
+require_once("lib/names.php");
 
 function boss_getmoduleinfo()
 {
@@ -22,8 +29,8 @@ function boss_getmoduleinfo()
     ),
     "prefs" => array (
       "Walka z bossem,title",
-      "badguy_name" => "Name of the boss user would be fighting,string|[FIXME] Szkieletor",
-      "badguy_weapon" => "The boss' weapon,string|[FIXME] Szkieletowate lapska"
+      "badguy_name" => "Name of the boss user would be fighting,string",
+      "badguy_weapon" => "The boss' weapon,string"
     )
   );
 
@@ -106,6 +113,163 @@ function boss_run()
   page_header("[FIXME] Boss!");
 
   switch ($op){
+    case "prologue1":
+      output("`@Zwyciestwo!`n`n");
+      $flawless = (int)(httpget('flawless'));
+        if ($flawless) {
+        output("`b`c`&~~ Niepodwazalne Zwyciestwo ~~`0`c`b`n`n");
+      }
+      output("`GBrawo, `Epokonales bossa");
+
+      if ($flawless) {
+        output("`n`nTekst o bonusie do niepowdazalnego");
+      }
+      addnav("It is a new day","news.php");
+      strip_all_buffs();
+      $sql = "DESCRIBE " . db_prefix("accounts");
+      $result = db_query($sql);
+
+      reset($session['user']['dragonpoints']);
+      $dkpoints = 0;
+      while(list($key,$val) = each($session['user']['dragonpoints'])){
+        if ($val == "hp") $dkpoints += 5;
+      }
+
+      restore_buff_fields();
+      $hpgain = array(
+          'total' => $session['user']['maxhitpoints'],
+          'dkpoints' => $dkpoints,
+          'extra' => $session['user']['maxhitpoints'] - $dkpoints -
+              ($session['user']['level'] * 10),
+          'base' => $dkpoints + ($session['user']['level'] * 10),
+          );
+      $hpgain = modulehook("hprecalc", $hpgain);
+      calculate_buff_fields();
+
+      $nochange = array("acctid"  => 1
+               ,"name"            => 1
+               ,"sex"             => 1
+               ,"password"        => 1
+               ,"marriedto"       => 1
+               ,"title"           => 1
+               ,"login"           => 1
+               ,"dragonkills"     => 1
+               ,"locked"          => 1
+               ,"loggedin"        => 1
+               ,"superuser"       => 1
+               ,"gems"            => 1
+               ,"hashorse"        => 1
+               ,"gentime"         => 1
+               ,"gentimecount"    => 1
+               ,"lastip"          => 1
+               ,"uniqueid"        => 1
+               ,"dragonpoints"    => 1
+               ,"laston"          => 1
+               ,"prefs"           => 1
+               ,"lastmotd"        => 1
+               ,"emailaddress"    => 1
+               ,"emailvalidation" => 1
+               ,"gensize"         => 1
+               ,"bestdragonage"   => 1
+               ,"dragonage"       => 1
+               ,"donation"        => 1
+               ,"donationspent"   => 1
+               ,"donationconfig"  => 1
+               ,"bio"             => 1
+               ,"charm"           => 1
+               ,"banoverride"     => 1
+               ,"referer"         => 1
+               ,"refererawarded"  => 1
+               ,"ctitle"          => 1
+               ,"beta"            => 1
+               ,"clanid"          => 1
+               ,"clanrank"        => 1
+               ,"clanjoindate"    => 1);
+
+      $nochange = modulehook("dk-preserve", $nochange);
+
+      $session['user']['dragonage'] = $session['user']['age'];
+      if ($session['user']['dragonage'] <  $session['user']['bestdragonage'] ||
+          $session['user']['bestdragonage'] == 0) {
+        $session['user']['bestdragonage'] = $session['user']['dragonage'];
+      }
+      for ($i = 0; $i < db_num_rows($result); $i++){
+        $row = db_fetch_assoc($result);
+        if (array_key_exists($row['Field'], $nochange) &&
+            $nochange[$row['Field']]){
+        } else {
+          $session['user'][$row['Field']] = $row["Default"];
+        }
+      }
+      $session['user']['gold'] = getsetting("newplayerstartgold", 50);
+
+      $newtitle = get_dk_title($session['user']['dragonkills'], $session['user']['sex']);
+
+      $restartgold = $session['user']['gold'] +
+        getsetting("newplayerstartgold", 50) * $session['user']['dragonkills'];
+      $restartgems = 0;
+      if ($restartgold > getsetting("maxrestartgold", 300)) {
+        $restartgold = getsetting("maxrestartgold", 300);
+        $restartgems = ($session['user']['dragonkills'] -
+            (getsetting("maxrestartgold", 300) /
+             getsetting("newplayerstartgold", 50)) - 1);
+        if ($restartgems > getsetting("maxrestartgems", 10)) {
+          $restartgems = getsetting("maxrestartgems", 10);
+        }
+      }
+      $session['user']['gold'] = $restartgold;
+      $session['user']['gems'] += $restartgems;
+
+      if ($flawless) {
+        $session['user']['gold'] += 3 * getsetting("newplayerstartgold", 50);
+        $session['user']['gems'] += 1;
+      }
+
+      $session['user']['maxhitpoints'] = 10 + $hpgain['dkpoints'] +
+        $hpgain['extra'];
+      $session['user']['hitpoints'] = $session['user']['maxhitpoints'];
+
+      // Sanity check
+      if ($session['user']['maxhitpoints'] < 1) {
+        // Yes, this is a freaking hack.
+        die("ACK!! Somehow this user would end up perma-dead.. Not allowing DK to proceed!  Notify admin and figure out why this would happen so that it can be fixed before DK can continue.");
+        exit();
+      }
+
+      // Set the new title.
+      $newname = change_player_title($newtitle);
+      $session['user']['title'] = $newtitle;
+      $session['user']['name'] = $newname;
+
+      reset($session['user']['dragonpoints']);
+      while (list($key,$val) = each($session['user']['dragonpoints'])){
+        if ($val == "at"){
+          $session['user']['attack']++;
+        }
+        if ($val == "de"){
+          $session['user']['defense']++;
+        }
+      }
+      $session['user']['laston'] = date("Y-m-d H:i:s", strtotime("-1 day"));
+      $session['user']['slaydragon'] = 1;
+
+      output("`n`n`ETekst na po zabiciu bossa");
+
+      // allow explanative text as well.
+      modulehook("dragonkilltext");
+
+      $regname = get_player_basename();
+      addnews("`#%s`# has earned the title `&%s`# for having slain the `@Green Dragon`& `^%s`# times!",$regname,$session['user']['title'],$session['user']['dragonkills']);
+      output("`n`n`^You are now known as `&%s`^!!",$session['user']['name']);
+      output("`n`n`&Because you have slain the dragon %s times, you start with some extras.  You also keep additional permanent hitpoints you've earned.`n",$session['user']['dragonkills']);
+      $session['user']['charm'] += 5;
+      output("`^You gain FIVE charm points for having defeated the dragon!`n");
+      debuglog("slew the dragon and starts with {$session['user']['gold']} gold and {$session['user']['gems']} gems");
+
+      // Moved this hear to make some things easier.
+      modulehook("dragonkill", array());
+      invalidatedatacache("list.php-warsonline");
+      break;
     case "enter":
       /* zgarniamy losowego bossa */
       $sql = "SELECT * FROM " . db_prefix("bosses") . " ORDER BY RAND() LIMIT 1;";
@@ -153,12 +317,12 @@ function boss_run()
 
       if ($victory){
         output("Brawo!");
-        villagenav();
+        addnav("Kontynuuj", "$here&op=prologue1&flawless=$flawless");
       } elseif ($defeat){
         output("Niestety, $bossname cie pokonal");
         villagenav();
       } else {
-        fightnav();
+        fightnav(true, false, "$here");
       }
       break;
     case "flee":
