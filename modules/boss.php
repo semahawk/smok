@@ -102,7 +102,8 @@ function boss_dohook($hookname, $args)
 
 function boss_runevent($type, $link)
 {
-  // NULL
+  addnav("", "runmodule.php?module=boss&op=enter");
+  redirect("runmodule.php?module=boss&op=enter");
 }
 
 function boss_run()
@@ -336,7 +337,7 @@ function boss_run()
       }
       break;
     case "flee":
-      output("`c`EStwierdzasz, ze jestes za `GMIEKKI `Ena bossa, ale jeszcze tutaj wrocisz.`c, po nowym dniu");
+      output("`c`EStwierdzasz, ze jestes za `GMIEKKI `Ena bossa, ale jeszcze tutaj wrocisz, po nowym dniu`c");
       villagenav();
       $session['user']['seendragon'] = 1;
       break;
