@@ -284,15 +284,11 @@ function boss_run()
       $sql = "SELECT * FROM " . db_prefix("bosses") . " ORDER BY RAND() LIMIT 1;";
       $res = db_query($sql);
       $row = db_fetch_assoc($res);
-      /* zapisać go w ustawieniach */
+      /* zapisujemy go w ustawieniach */
       set_module_pref("badguy_name", $row['bossname']);
       set_module_pref("badguy_weapon", $row['bossweapon']);
       set_module_pref("badguy_desc", $row['bossdesc']);
-      output("`c`GWYCZESANY `Etekst o tym jak to chcesz dowalic `GBOSSOWI `Eale sie cykasz i nie jestes pewien`c", get_module_pref("badguy_name"), get_module_pref("badguy_weapon"));
-      addnav("Zmierz sie z bossem", "$here&op=fight");
-      addnav("Bierz tylek w troki", "$here&op=flee");
-      break;
-    case "fight":
+      /* i ustawiamy userowi w sesji */
       $badguy = array(
         "creaturename" => get_module_pref("badguy_name"),
         "creaturelevel" => 18,
@@ -323,6 +319,11 @@ function boss_run()
       $badguy['creaturehealth'] += $hpflux;
       $session['user']['badguy'] = createstring($badguy);
 
+      output("`c`GWYCZESANY `Etekst o tym jak to chcesz dowalic `GBOSSOWI `Eale sie cykasz i nie jestes pewien`c", get_module_pref("badguy_name"), get_module_pref("badguy_weapon"));
+      addnav("Zmierz sie z bossem", "$here&op=fight");
+      addnav("Bierz tylek w troki", "$here&op=flee");
+      break;
+    case "fight":
       require_once("battle.php");
 
       if ($victory){
