@@ -57,18 +57,6 @@ function final_run()
 
   switch ($op){
     case "fight":
-      $badguy = array(
-        "creaturename" => translate_inline("`@The Final Green Dragon`0"),
-        "creaturelevel" => 180,
-        "creatureweapon" => translate_inline("The Greatest Flaming Maw"),
-        "creatureattack" => 450,
-        "creaturedefense" => 250,
-        "creaturehealth" => 3000,
-        "diddamage" => 0, 'type' => 'dragon');
-
-      //$badguy = modulehook("buffdragon", $badguy);
-      $session['user']['badguy']=createstring($badguy);
-
       require_once("battle.php");
 
       if ($victory){
@@ -79,7 +67,7 @@ function final_run()
           output("Cienki jestes, hard-reset dla ciebie");
           addnav("[FIXME] Do poczekalni", "$here&op=after&res=lose");
         } else {
-          fightnav(true, true);
+          fightnav(true, false, "$here");
         }
       }
       break;
@@ -99,6 +87,20 @@ function final_run()
       }
       break;
     default:
+      $badguy = array(
+        /* TODO: dopasować staty smoka */
+        "creaturename" => translate_inline("`@The Final Green Dragon`0"),
+        "creaturelevel" => 180,
+        "creatureweapon" => translate_inline("The Greatest Flaming Maw"),
+        "creatureattack" => 450,
+        "creaturedefense" => 250,
+        "creaturehealth" => 3000,
+        "diddamage" => 0, 'type' => 'dragon');
+
+      $badguy['playerstarthp'] = $session['user']['hitpoints'];
+      $badguy = modulehook("buffdragon", $badguy);
+      $session['user']['badguy'] = createstring($badguy);
+
       addnav("Bron sie!", "$here&op=fight");
       output("`c`GEPICKI `etekst o tym jak smok cie zaatakowal i nie masz zadnych szans ucieczki i musisz walczyc.`c");
       break;
