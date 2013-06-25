@@ -19,6 +19,7 @@ function final_getmoduleinfo()
     ),
     "prefs" => array (
       "Final fight - user prefs,title",
+      "after" => "Uzytkownik zakonczyl walke ze smokiem, i czeka w Poczekalni,bool|false"
     )
   );
 
@@ -72,6 +73,7 @@ function final_run()
       }
       break;
     case "after":
+      set_module_pref("after", true);
       if (httpget('res') == "win"){
         output("Brawo! Udalo ci sie!`n");
       } else if (httpget('res') == "lose"){
