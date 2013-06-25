@@ -21,7 +21,7 @@ function boss_getmoduleinfo()
     "name" => "Walka z Bossem",
     "version" => "0.1.0",
     "author" => "`GCiuf",
-    "category" => "Forest",
+    "category" => "Ciuf",
     "download" => "example.com",
     "settings" => array (
       "Walka z Bossem,title",

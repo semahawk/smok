@@ -10,7 +10,7 @@ function final_getmoduleinfo()
     "name" => "Finalna walka ze Smokiem",
     "version" => "0.1.0",
     "author" => "`GCiuf",
-    "category" => "Village",
+    "category" => "Ciuf",
     "download" => "example.com",
     "settings" => array (
       "Legendarny Smok,title",
