@@ -77,6 +77,7 @@ function boss_install()
 
   module_addeventhook("forest", "return 100;");
   module_addhook("forest");
+  module_addhook("charstats");
 
   return true;
 }
@@ -101,6 +102,13 @@ function boss_dohook($hookname, $args)
         addnav("Walcz");
         addnav("`@Walcz z bossem!`0", "runmodule.php?module=boss&op=enter");
       }
+      break;
+    case "charstats":
+      $bossname = get_module_pref("bossname");
+      $bosslocation = get_module_pref("bosslocation");
+      addcharstat("[FIXME] Informacje o bossie");
+      addcharstat("Nazwa", $bossname == "" ? "Nieznana" : $bossname);
+      addcharstat("Lokalizacja", $bosslocation == "" ? "Nieznana" : $bosslocation);
       break;
   }
 
