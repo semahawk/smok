@@ -158,12 +158,12 @@ function boss_run()
 
       restore_buff_fields();
       $hpgain = array(
-          'total' => $session['user']['maxhitpoints'],
-          'dkpoints' => $dkpoints,
-          'extra' => $session['user']['maxhitpoints'] - $dkpoints -
-              ($session['user']['level'] * 10),
-          'base' => $dkpoints + ($session['user']['level'] * 10),
-          );
+        'total' => $session['user']['maxhitpoints'],
+        'dkpoints' => $dkpoints,
+        'extra' => $session['user']['maxhitpoints'] - $dkpoints -
+            ($session['user']['level'] * 10),
+        'base' => $dkpoints + ($session['user']['level'] * 10),
+      );
       $hpgain = modulehook("hprecalc", $hpgain);
       calculate_buff_fields();
 
@@ -175,7 +175,14 @@ function boss_run()
         "marriedto"       => 1,
         "title"           => 1,
         "race"            => 1,
+        "attack"          => 1,
+        "defense"         => 1,
+        "gold"            => 1,
+        "goldinbank"      => 1,
+        //"experience"      => 1, /* question mark */
         "specialty"       => 1,
+        "hitpoints"       => 1,
+        "maxhitpoints"    => 1,
         "login"           => 1,
         "dragonkills"     => 1,
         "locked"          => 1,
@@ -209,6 +216,100 @@ function boss_run()
         "clanid"          => 1,
         "clanrank"        => 1,
         "clanjoindate"    => 1);
+
+      /*
+       * kolumny z tabeli "accounts":
+       *
+       * acctid
+       * name
+       * sex
+       * specialty
+       * experience
+       * gold
+       * weapon
+       * armor
+       * seenmaster
+       * level
+       * defense
+       * attack
+       * alive
+       * goldinbank
+       * marriedto
+       * spirits
+       * laston
+       * hitpoints
+       * maxhitpoints
+       * gems
+       * weaponvalue
+       * armorvalue
+       * location
+       * turns
+       * title
+       * password
+       * badguy
+       * allowednavs
+       * output
+       * loggedin
+       * resurrections
+       * superuser
+       * weapondmg
+       * armordef
+       * age
+       * charm
+       * specialinc
+       * specialmisc
+       * login
+       * lastmotd
+       * playerfights
+       * lasthit
+       * seendragon
+       * dragonkills
+       * waiting_after_final
+       * locked
+       * restorepage
+       * hashorse
+       * bufflist
+       * gentime
+       * gentimecount
+       * lastip
+       * uniqueid
+       * dragonpoints
+       * boughtroomtoday
+       * emailaddress
+       * emailvalidation
+       * sentnotice
+       * prefs
+       * pvpflag
+       * transferredtoday
+       * soulpoints
+       * gravefights
+       * hauntedby
+       * deathpower
+       * gensize
+       * recentcomments
+       * donation
+       * donationspent
+       * donationconfig
+       * referer
+       * refererawarded
+       * bio
+       * race
+       * biotime
+       * banoverride
+       * buffbackup
+       * amountouttoday
+       * pk
+       * dragonage
+       * bestdragonage
+       * ctitle
+       * beta
+       * slaydragon
+       * fedmount
+       * regdate
+       * clanid
+       * clanrank
+       * clanjoindate
+       */
 
       $nochange = modulehook("dk-preserve", $nochange);
 
