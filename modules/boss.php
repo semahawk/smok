@@ -32,6 +32,7 @@ function boss_getmoduleinfo()
       "badguy_name" => "Name of the boss user would be fighting,string",
       "badguy_weapon" => "The boss' weapon,string",
       "badguy_desc" => "The boss' text after beating him,string",
+      "badguy_village" => "The boss' specific village in which it is to be seen,string",
     )
   );
 
@@ -49,7 +50,8 @@ function boss_install()
                   "bossid int(11) primary key auto_increment,\n" .
                   "bossname varchar(255) not null,\n" .
                   "bossweapon varchar(255) not null,\n" .
-                  "bossdesc text not null\n" .
+                  "bossdesc text not null,\n" .
+                  "bosslocation varchar(255) not null\n" .
                 ");\n";
 
   db_query($sql_drop);
@@ -57,17 +59,20 @@ function boss_install()
 
   $bosses = array(
     "[FIXME] Szkieletor" => array("[FIXME] Szkieletowate lapska",
-      "`EOpis po zabiciu `GSZKIELETORA"),
-    "[FIXME] Mumia" => array("[FIXME] Mumiowate lapska",
-      "`EOpis po zabiciu `GMUMII"),
-    "[FIXME] Wonsz" => array("[FIXME] Zemby",
-      "`EOpis po zabiciu `GWENSZA")
+      "`EOpis po zabiciu `GSZKIELETORA",
+      "Deus Nocturnem"),
+    "[FIXME] Ciemny Elf" => array("[FIXME] Ciemny luk",
+      "`EOpis po zabiciu `GCIEMNEGO ELFA",
+      "Glorfindal"),
+    "[FIXME] Kraken" => array("[FIXME] Macki",
+      "`EOpis po zabiciu `GKRAKENA",
+      "Nautileum")
   );
 
   /* TODO: to można by było wrzucić jako całość do jednego stringa i raz wykonać
    *       ale czemuś, nie wiedzieć czemu, mam syntax errory */
   foreach ($bosses as $name => $more){
-    db_query("INSERT INTO `" . db_prefix("bosses") . "` (bossid, bossname, bossweapon, bossdesc) VALUES(NULL, '$name', '$more[0]', '$more[1]');\n");
+    db_query("INSERT INTO `" . db_prefix("bosses") . "` (bossid, bossname, bossweapon, bossdesc, bosslocation) VALUES(NULL, '$name', '$more[0]', '$more[1]', '$more[2]');\n");
   }
 
   module_addeventhook("forest", "return 100;");
@@ -90,7 +95,9 @@ function boss_dohook($hookname, $args)
 
   switch ($hookname){
     case "forest":
-      if ($session['user']['level'] >= 15 && $session['user']['seendragon'] == 0){
+      if (($session['user']['level'] >= 15) &&
+          ($session['user']['seendragon'] == 0) &&
+          ($session['user']['location'] == get_module_pref("badguy_village"))){
         addnav("Walcz");
         addnav("`@Walcz z bossem!`0", "runmodule.php?module=boss&op=enter");
       }
