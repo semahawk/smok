@@ -303,6 +303,7 @@ function boss_run()
       set_module_pref("bossname", $row['bossname']);
       set_module_pref("bossweapon", $row['bossweapon']);
       set_module_pref("bossdesc", $row['bossdesc']);
+      set_module_pref("bosslocation", $row['bosslocation']);
       /* i ustawiamy userowi w sesji */
       $badguy = array(
         "creaturename" => get_module_pref("bossname"),
