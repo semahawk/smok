@@ -29,10 +29,10 @@ function boss_getmoduleinfo()
     ),
     "prefs" => array (
       "Walka z bossem,title",
-      "badguy_name" => "Name of the boss user would be fighting,string",
-      "badguy_weapon" => "The boss' weapon,string",
-      "badguy_desc" => "The boss' text after beating him,string",
-      "badguy_village" => "The boss' specific village in which it is to be seen,string",
+      "bossname" => "Name of the boss user would be fighting,string",
+      "bossweapon" => "The boss' weapon,string",
+      "bossdesc" => "The boss' text after beating him,string",
+      "bosslocation" => "The boss' specific village in which it is to be seen,string",
     )
   );
 
@@ -97,7 +97,7 @@ function boss_dohook($hookname, $args)
     case "forest":
       if (($session['user']['level'] >= 15) &&
           ($session['user']['seendragon'] == 0) &&
-          ($session['user']['location'] == get_module_pref("badguy_village"))){
+          ($session['user']['location'] == get_module_pref("bosslocation"))){
         addnav("Walcz");
         addnav("`@Walcz z bossem!`0", "runmodule.php?module=boss&op=enter");
       }
@@ -119,8 +119,8 @@ function boss_run()
 
   $op = httpget('op');
   $here = "runmodule.php?module=boss";
-  $bname = get_module_pref("badguy_name");
-  $bweap = get_module_pref("badguy_weapon");
+  $bname = get_module_pref("bossname");
+  $bweap = get_module_pref("bossweapon");
 
   page_header("[FIXME] Boss!");
 
@@ -269,7 +269,7 @@ function boss_run()
       $session['user']['laston'] = date("Y-m-d H:i:s", strtotime("-1 day"));
       $session['user']['slaydragon'] = 1;
 
-      output("`n`n%s", get_module_pref("badguy_desc"));
+      output("`n`n%s", get_module_pref("bossdesc"));
 
       // allow explanative text as well.
       modulehook("dragonkilltext");
@@ -292,14 +292,14 @@ function boss_run()
       $res = db_query($sql);
       $row = db_fetch_assoc($res);
       /* zapisujemy go w ustawieniach */
-      set_module_pref("badguy_name", $row['bossname']);
-      set_module_pref("badguy_weapon", $row['bossweapon']);
-      set_module_pref("badguy_desc", $row['bossdesc']);
+      set_module_pref("bossname", $row['bossname']);
+      set_module_pref("bossweapon", $row['bossweapon']);
+      set_module_pref("bossdesc", $row['bossdesc']);
       /* i ustawiamy userowi w sesji */
       $badguy = array(
-        "creaturename" => get_module_pref("badguy_name"),
+        "creaturename" => get_module_pref("bossname"),
         "creaturelevel" => 18,
-        "creatureweapon" => get_module_pref("badguy_weapon"),
+        "creatureweapon" => get_module_pref("bossweapon"),
         "creatureattack" => 45,
         "creaturedefense" => 25,
         "creaturehealth" => 300,
@@ -326,7 +326,7 @@ function boss_run()
       $badguy['creaturehealth'] += $hpflux;
       $session['user']['badguy'] = createstring($badguy);
 
-      output("`c`GWYCZESANY `Etekst o tym jak to chcesz dowalic `GBOSSOWI `Eale sie cykasz i nie jestes pewien`c", get_module_pref("badguy_name"), get_module_pref("badguy_weapon"));
+      output("`c`GWYCZESANY `Etekst o tym jak to chcesz dowalic `GBOSSOWI `Eale sie cykasz i nie jestes pewien`c", get_module_pref("bossname"), get_module_pref("bossweapon"));
       addnav("Zmierz sie z bossem", "$here&op=fight");
       addnav("Bierz tylek w troki", "$here&op=flee");
       break;
@@ -338,7 +338,7 @@ function boss_run()
         $session['user']['dragonkills']++;
         addnav("Kontynuuj", "$here&op=prologue1&flawless=$flawless");
       } elseif ($defeat){
-        output("Niestety, %s cie pokonal", get_module_pref("badguy_name"));
+        output("Niestety, %s cie pokonal", get_module_pref("bossname"));
         villagenav();
       } else {
         fightnav(true, false, "$here");
