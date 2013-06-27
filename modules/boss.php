@@ -98,7 +98,7 @@ function boss_dohook($hookname, $args)
     case "forest":
       if (($session['user']['level'] >= 15) &&
           ($session['user']['seendragon'] == 0) &&
-          ($session['user']['location'] == get_module_pref("bosslocation") || $session['user']['dragonkills'] == 0)){
+          ($session['user']['location'] == get_module_pref("bosslocation") || $session['user']['dragonkills'] == 0) || get_module_setting("dev")){
         addnav("Walcz");
         addnav("`@Walcz z bossem!`0", "runmodule.php?module=boss&op=enter");
       }
@@ -293,49 +293,12 @@ function boss_run()
       // Moved this hear to make some things easier.
       modulehook("dragonkill", array());
       invalidatedatacache("list.php-warsonline");
+      /* set the new boss */
+      boss_newboss();
       break;
     case "enter":
-      /* zgarniamy losowego bossa */
-      $sql = "SELECT * FROM " . db_prefix("bosses") . " ORDER BY RAND() LIMIT 1;";
-      $res = db_query($sql);
-      $row = db_fetch_assoc($res);
-      /* zapisujemy go w ustawieniach */
-      set_module_pref("bossname", $row['bossname']);
-      set_module_pref("bossweapon", $row['bossweapon']);
-      set_module_pref("bossdesc", $row['bossdesc']);
-      set_module_pref("bosslocation", $row['bosslocation']);
-      /* i ustawiamy userowi w sesji */
-      $badguy = array(
-        "creaturename" => get_module_pref("bossname"),
-        "creaturelevel" => 18,
-        "creatureweapon" => get_module_pref("bossweapon"),
-        "creatureattack" => 45,
-        "creaturedefense" => 25,
-        "creaturehealth" => 300,
-        "diddamage" => 0
-      );
-      $points = 0;
-      restore_buff_fields();
-      reset($session['user']['dragonpoints']);
-      while(list($key, $val) = each($session['user']['dragonpoints'])){
-        if ($val == "at" || $val == "de") $points++;
-      }
-      $points += (int)(($session['user']['maxhitpoints'] - 150) / 5);
-      $points = round($points * .75, 0);
-      $atkflux = e_rand(0, $points);
-      $defflux = e_rand(0, $points - $atkflux);
-      $hpflux = ($points - ($atkflux + $defflux)) * 5;
-      debug("DEBUG: $points modification points total.`0`n");
-      debug("DEBUG: +$atkflux allocated to attack.`n");
-      debug("DEBUG: +$defflux allocated to defense.`n");
-      debug("DEBUG: +". ($hpflux / 5) . "*5 to hitpoints.`0`n");
-      calculate_buff_fields();
-      $badguy['creatureattack'] += $atkflux;
-      $badguy['creaturedefense'] += $defflux;
-      $badguy['creaturehealth'] += $hpflux;
-      $session['user']['badguy'] = createstring($badguy);
-
-      output("`c`GWYCZESANY `Etekst o tym jak to chcesz dowalic `GBOSSOWI `Eale sie cykasz i nie jestes pewien`c", get_module_pref("bossname"), get_module_pref("bossweapon"));
+      boss_fetchboss();
+      output("`c`GWYCZESANY `Etekst o tym jak to chcesz dowalic `GBOSSOWI `Eale sie cykasz i chyba zawrocisz`c");
       addnav("Zmierz sie z bossem", "$here&op=fight");
       addnav("Bierz tylek w troki", "$here&op=flee");
       break;
@@ -367,6 +330,77 @@ function boss_run()
   }
 
   page_footer();
+}
+
+/*
+ * Zapisuje w sesji bossa który bądź jest w prefach, a jeśli nie, to losuje go.
+ */
+function boss_fetchboss()
+{
+  global $session;
+
+  $name = "";
+  $weapon = "";
+
+  if (get_module_pref("bossname") == NULL){
+    /* zgarniamy losowego bossa */
+    $sql = "SELECT * FROM " . db_prefix("bosses") . " ORDER BY RAND() LIMIT 1;";
+    $res = db_query($sql);
+    $row = db_fetch_assoc($res);
+    $name = $row['bossname'];
+    $weapon = $row['bossweapon'];
+  } else {
+    /* wyciągamy bossa z prefów */
+    $name = get_module_pref("bossname");
+    $weapon = get_module_pref("bossweapon");
+  }
+
+  $badguy = array(
+    "creaturename" => $name,
+    "creaturelevel" => 18,
+    "creatureweapon" => $weapon,
+    "creatureattack" => 45,
+    "creaturedefense" => 25,
+    "creaturehealth" => 300,
+    "diddamage" => 0
+  );
+
+  $points = 0;
+  restore_buff_fields();
+  reset($session['user']['dragonpoints']);
+  while(list($key, $val) = each($session['user']['dragonpoints'])){
+    if ($val == "at" || $val == "de") $points++;
+  }
+  $points += (int)(($session['user']['maxhitpoints'] - 150) / 5);
+  $points = round($points * .75, 0);
+  $atkflux = e_rand(0, $points);
+  $defflux = e_rand(0, $points - $atkflux);
+  $hpflux = ($points - ($atkflux + $defflux)) * 5;
+  debug("DEBUG: $points modification points total.`0`n");
+  debug("DEBUG: +$atkflux allocated to attack.`n");
+  debug("DEBUG: +$defflux allocated to defense.`n");
+  debug("DEBUG: +". ($hpflux / 5) . "*5 to hitpoints.`0`n");
+  calculate_buff_fields();
+  $badguy['creatureattack'] += $atkflux;
+  $badguy['creaturedefense'] += $defflux;
+  $badguy['creaturehealth'] += $hpflux;
+  $session['user']['badguy'] = createstring($badguy);
+}
+
+/*
+ * Zapisuje w prefach losowego bossa.
+ */
+function boss_newboss()
+{
+  /* zgarniamy losowego bossa */
+  $sql = "SELECT * FROM " . db_prefix("bosses") . " ORDER BY RAND() LIMIT 1;";
+  $res = db_query($sql);
+  $row = db_fetch_assoc($res);
+  /* i zapisujemy w prefach */
+  set_module_pref("bossname", $row['bossname']);
+  set_module_pref("bossweapon", $row['bossweapon']);
+  set_module_pref("bossdesc", $row['bossdesc']);
+  set_module_pref("bosslocation", $row['bosslocation']);
 }
 
 ?>
