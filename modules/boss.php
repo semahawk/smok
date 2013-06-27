@@ -97,7 +97,7 @@ function boss_dohook($hookname, $args)
     case "forest":
       if (($session['user']['level'] >= 15) &&
           ($session['user']['seendragon'] == 0) &&
-          ($session['user']['location'] == get_module_pref("bosslocation"))){
+          ($session['user']['location'] == get_module_pref("bosslocation") || $session['user']['dragonkills'] == 0)){
         addnav("Walcz");
         addnav("`@Walcz z bossem!`0", "runmodule.php?module=boss&op=enter");
       }
