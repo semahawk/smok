@@ -14,6 +14,7 @@ require_once("lib/http.php");
 require_once("lib/buffs.php");
 require_once("lib/taunt.php");
 require_once("lib/names.php");
+require_once("lib/experience.php");
 
 function boss_getmoduleinfo()
 {
@@ -109,6 +110,10 @@ function boss_dohook($hookname, $args)
       addcharstat("[FIXME] Informacje o bossie");
       addcharstat("Nazwa", $bossname == "" ? "Nieznana" : $bossname);
       addcharstat("Lokalizacja", $bosslocation == "" ? "Nieznana" : $bosslocation);
+      if (get_module_setting("dev")){
+        addcharstat("EXP needed", exp_for_next_level($session['user']['level'], $session['user']['dragonkills'], false));
+        addcharstat("EXP needed w/ multiplier", exp_for_next_level($session['user']['level'], $session['user']['dragonkills']));
+      }
       break;
   }
 
