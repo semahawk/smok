@@ -27,6 +27,7 @@ function boss_getmoduleinfo()
     "settings" => array (
       "Walka z Bossem,title",
       "dev" => "Wersja developerska,bool|true",
+      "pokeball_chance" => "Chance on finding the pokeball,int|5",
     ),
     "prefs" => array (
       "Walka z bossem,title",
