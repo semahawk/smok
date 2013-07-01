@@ -28,6 +28,7 @@ function boss_getmoduleinfo()
       "Walka z Bossem,title",
       "dev" => "Wersja developerska,bool|true",
       "pokeball_chance" => "Chance on finding the pokeball (in %),int|5",
+      "pokeball_only_in_bosss_location" => "Pokeball drops only in the boss' location,bool|true",
     ),
     "prefs" => array (
       "Walka z bossem,title",
@@ -125,9 +126,12 @@ function boss_dohook($hookname, $args)
     case "battle-victory":
       if (get_module_pref("has_the_pokeball") == 0){
         if ($session['user']['level'] >= 15){
-          if (e_rand(0, 100) <= get_module_setting("pokeball_chance")){
-            output("`n`e[FIXME] `GBRAWO! `EOdnajdujesz pokeballa!`n`n");
-            set_module_pref("has_the_pokeball", true);
+          if (($session['user']['location'] == get_module_pref("bosslocation")) ||
+              (get_module_setting("pokeball_only_in_bosss_location") == 0)){
+            if (e_rand(0, 100) <= get_module_setting("pokeball_chance")){
+              output("`n`e[FIXME] `GBRAWO! `EOdnajdujesz pokeballa!`n`n");
+              set_module_pref("has_the_pokeball", true);
+            }
           }
         }
       }
