@@ -29,6 +29,8 @@ function boss_getmoduleinfo()
       "dev" => "Wersja developerska,bool|true",
       "pokeball_chance" => "Chance on finding the pokeball (in %),int|5",
       "pokeball_only_in_bosss_location" => "Pokeball drops only in the boss' location,bool|true",
+      "pokeball_walker" => "Is the pokeball global and in a random forest?,bool|true",
+      "pokeball_location" => "If it is global/random then where is it now?,string",
     ),
     "prefs" => array (
       "Walka z bossem,title",
@@ -104,7 +106,7 @@ function boss_dohook($hookname, $args)
       if ((($session['user']['level'] >= 15) &&
            ($session['user']['seendragon'] == 0) &&
            ($session['user']['location'] == get_module_pref("bosslocation") || $session['user']['dragonkills'] == 0) &&
-            get_module_pref("has_the_pokeball")) ||
+           (get_module_pref("has_the_pokeball") == 1)) ||
             get_module_setting("dev")){
         addnav("Walcz");
         addnav("`@Walcz z bossem!`0", "runmodule.php?module=boss&op=enter");
@@ -113,25 +115,47 @@ function boss_dohook($hookname, $args)
     case "charstats":
       $bossname = get_module_pref("bossname");
       $bosslocation = get_module_pref("bosslocation");
-      addcharstat("[FIXME] Informacje o bossie");
+      addcharstat("Informacje o bossie");
       addcharstat("Nazwa", $bossname == "" ? "Nieznana" : $bossname);
       addcharstat("Lokalizacja", $bosslocation == "" ? "Nieznana" : $bosslocation);
       addcharstat("Ilosc krysztalow", $session['user']['dragonkills']);
       addcharstat("[FIXME] Pokeball znaleziony?", get_module_pref("has_the_pokeball") == 1 ? "Tak" : "Nie");
       if (get_module_setting("dev")){
-        addcharstat("EXP needed", exp_for_next_level($session['user']['level'], $session['user']['dragonkills'], false));
-        addcharstat("EXP needed w/ multiplier", exp_for_next_level($session['user']['level'], $session['user']['dragonkills']));
+        if (get_module_setting("pokeball_walker")){
+          addcharstat("[FIXME] Lokacja pokeballa", get_module_setting("pokeball_location"));
+        } else {
+          addcharstat("[FIXME] Lokacja pokeballa", get_module_pref("bosslocation"));
+        }
+        addcharstat("Potrzebny EXP", exp_for_next_level($session['user']['level'], $session['user']['dragonkills'], false));
+        addcharstat("Potrzebny EXP z mnoznikiem", exp_for_next_level($session['user']['level'], $session['user']['dragonkills']));
       }
       break;
     case "battle-victory":
+      $canshoot = false;
       if (get_module_pref("has_the_pokeball") == 0){
         if ($session['user']['level'] >= 15){
-          if (($session['user']['location'] == get_module_pref("bosslocation")) ||
-              (get_module_setting("pokeball_only_in_bosss_location") == 0)){
-            if (e_rand(0, 100) <= get_module_setting("pokeball_chance")){
-              output("`n`e[FIXME] `GBRAWO! `EOdnajdujesz pokeballa!`n`n");
-              set_module_pref("has_the_pokeball", true);
+          if (get_module_setting("pokeball_walker")){
+            /* pokeball wędrownik
+             * sprawdzamy czy jesteśmy w tym mieście co i ów pokeball */
+            if ($session['user']['location'] == get_module_setting("pokeball_location")){
+              $canshoot = true;
             }
+          } else {
+            /* pokeball nie jest wędrownikiem
+             * więc jest w tym samym mieście co i boss */
+            if ($session['user']['location'] == get_module_pref("bosslocation")){
+              $canshoot = true;
+            }
+          }
+        }
+      }
+      if ($canshoot){
+        if (e_rand(0, 100) <= get_module_setting("pokeball_chance")){
+          output("`n`e[FIXME] `GBRAWO! `EOdnajdujesz pokeballa!`n`n");
+          set_module_pref("has_the_pokeball", true);
+          if (get_module_setting("pokeball_walker")){
+            // FIXME: trza ustawić to jakieś nowe losowe miasto
+            //        ale jest już pierwsza w nocy
           }
         }
       }
@@ -242,100 +266,6 @@ function boss_run()
         "clanid"          => 1,
         "clanrank"        => 1,
         "clanjoindate"    => 1);
-
-      /*
-       * kolumny z tabeli "accounts":
-       *
-       * acctid
-       * name
-       * sex
-       * specialty
-       * experience
-       * gold
-       * weapon
-       * armor
-       * seenmaster
-       * level
-       * defense
-       * attack
-       * alive
-       * goldinbank
-       * marriedto
-       * spirits
-       * laston
-       * hitpoints
-       * maxhitpoints
-       * gems
-       * weaponvalue
-       * armorvalue
-       * location
-       * turns
-       * title
-       * password
-       * badguy
-       * allowednavs
-       * output
-       * loggedin
-       * resurrections
-       * superuser
-       * weapondmg
-       * armordef
-       * age
-       * charm
-       * specialinc
-       * specialmisc
-       * login
-       * lastmotd
-       * playerfights
-       * lasthit
-       * seendragon
-       * dragonkills
-       * waiting_after_final
-       * locked
-       * restorepage
-       * hashorse
-       * bufflist
-       * gentime
-       * gentimecount
-       * lastip
-       * uniqueid
-       * dragonpoints
-       * boughtroomtoday
-       * emailaddress
-       * emailvalidation
-       * sentnotice
-       * prefs
-       * pvpflag
-       * transferredtoday
-       * soulpoints
-       * gravefights
-       * hauntedby
-       * deathpower
-       * gensize
-       * recentcomments
-       * donation
-       * donationspent
-       * donationconfig
-       * referer
-       * refererawarded
-       * bio
-       * race
-       * biotime
-       * banoverride
-       * buffbackup
-       * amountouttoday
-       * pk
-       * dragonage
-       * bestdragonage
-       * ctitle
-       * beta
-       * slaydragon
-       * fedmount
-       * regdate
-       * clanid
-       * clanrank
-       * clanjoindate
-       */
 
       $nochange = modulehook("dk-preserve", $nochange);
 
