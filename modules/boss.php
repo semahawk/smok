@@ -34,6 +34,7 @@ function boss_getmoduleinfo()
       "bossweapon" => "The boss' weapon,string",
       "bossdesc" => "The boss' text after beating him,string",
       "bosslocation" => "The boss' specific village in which it is to be seen,string",
+      "has_the_pokeball" => "Whether the user has found the 'pokeball',bool|false",
     )
   );
 
@@ -111,6 +112,7 @@ function boss_dohook($hookname, $args)
       addcharstat("Nazwa", $bossname == "" ? "Nieznana" : $bossname);
       addcharstat("Lokalizacja", $bosslocation == "" ? "Nieznana" : $bosslocation);
       addcharstat("Ilosc krysztalow", $session['user']['dragonkills']);
+      addcharstat("[FIXME] Pokeball znaleziony?", get_module_pref("has_the_pokeball") == 1 ? "Tak" : "Nie");
       if (get_module_setting("dev")){
         addcharstat("EXP needed", exp_for_next_level($session['user']['level'], $session['user']['dragonkills'], false));
         addcharstat("EXP needed w/ multiplier", exp_for_next_level($session['user']['level'], $session['user']['dragonkills']));
