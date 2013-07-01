@@ -27,7 +27,7 @@ function boss_getmoduleinfo()
     "settings" => array (
       "Walka z Bossem,title",
       "dev" => "Wersja developerska,bool|true",
-      "pokeball_chance" => "Chance on finding the pokeball,int|5",
+      "pokeball_chance" => "Chance on finding the pokeball (in %),int|5",
     ),
     "prefs" => array (
       "Walka z bossem,title",
@@ -81,6 +81,7 @@ function boss_install()
   module_addeventhook("forest", "return 100;");
   module_addhook("forest");
   module_addhook("charstats");
+  module_addhook("battle-victory");
 
   return true;
 }
@@ -99,9 +100,11 @@ function boss_dohook($hookname, $args)
 
   switch ($hookname){
     case "forest":
-      if (($session['user']['level'] >= 15) &&
-          ($session['user']['seendragon'] == 0) &&
-          ($session['user']['location'] == get_module_pref("bosslocation") || $session['user']['dragonkills'] == 0) || get_module_setting("dev")){
+      if ((($session['user']['level'] >= 15) &&
+           ($session['user']['seendragon'] == 0) &&
+           ($session['user']['location'] == get_module_pref("bosslocation") || $session['user']['dragonkills'] == 0) &&
+            get_module_pref("has_the_pokeball")) ||
+            get_module_setting("dev")){
         addnav("Walcz");
         addnav("`@Walcz z bossem!`0", "runmodule.php?module=boss&op=enter");
       }
@@ -117,6 +120,16 @@ function boss_dohook($hookname, $args)
       if (get_module_setting("dev")){
         addcharstat("EXP needed", exp_for_next_level($session['user']['level'], $session['user']['dragonkills'], false));
         addcharstat("EXP needed w/ multiplier", exp_for_next_level($session['user']['level'], $session['user']['dragonkills']));
+      }
+      break;
+    case "battle-victory":
+      if (get_module_pref("has_the_pokeball") == 0){
+        if ($session['user']['level'] >= 15){
+          if (e_rand(0, 100) <= get_module_setting("pokeball_chance")){
+            output("`n`e[FIXME] `GBRAWO! `EOdnajdujesz pokeballa!`n`n");
+            set_module_pref("has_the_pokeball", true);
+          }
+        }
       }
       break;
   }
