@@ -28,7 +28,6 @@ function boss_getmoduleinfo()
       "Walka z Bossem,title",
       "dev" => "Wersja developerska,bool|true",
       "pokeball_chance" => "Chance on finding the pokeball (in %),int|5",
-      "pokeball_only_in_bosss_location" => "Pokeball drops only in the boss' location,bool|true",
       "pokeball_walker" => "Is the pokeball global and in a random forest?,bool|true",
       "pokeball_location" => "If it is global/random then where is it now?,string",
     ),
@@ -154,8 +153,13 @@ function boss_dohook($hookname, $args)
           output("`n`e[FIXME] `GBRAWO! `EOdnajdujesz pokeballa!`n`n");
           set_module_pref("has_the_pokeball", true);
           if (get_module_setting("pokeball_walker")){
-            // FIXME: trza ustawić to jakieś nowe losowe miasto
-            //        ale jest już pierwsza w nocy
+            // Hmm, powinno działać
+            $current_location = get_module_setting("pokeball_location");
+            $sql = "SELECT value FROM module_settings WHERE setting = 'villagename' AND value <> '$current_location' ORDER BY RAND() LIMIT 1;";
+            $res = db_query($sql);
+            $next_location = db_fetch_assoc($res)['value'];
+            output("`n`EKandydat do nowej lokacji pokeballa: `G%s`0`n`n", $next_location);
+            set_module_setting("pokeball_location", $next_location);
           }
         }
       }
