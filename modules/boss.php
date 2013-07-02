@@ -157,7 +157,8 @@ function boss_dohook($hookname, $args)
             $current_location = get_module_setting("pokeball_location");
             $sql = "SELECT value FROM module_settings WHERE setting = 'villagename' AND value <> '$current_location' ORDER BY RAND() LIMIT 1;";
             $res = db_query($sql);
-            $next_location = db_fetch_assoc($res)['value'];
+            $row = db_fetch_assoc($res);
+            $next_location = $row['value'];
             addnews("%s`E znalazl pokeballa w `G%s`0", get_player_basename(), $current_location);
             set_module_setting("pokeball_location", $next_location);
           }
