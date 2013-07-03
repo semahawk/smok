@@ -80,7 +80,7 @@ function boss_install()
     db_query("INSERT INTO `" . db_prefix("bosses") . "` (bossid, bossname, bossweapon, bossdesc, bosslocation) VALUES(NULL, '$name', '$more[0]', '$more[1]', '$more[2]');\n");
   }
 
-  module_addeventhook("forest", "return 100;");
+  module_addeventhook("forest", "return 0;");
   module_addhook("forest");
   module_addhook("charstats");
   module_addhook("battle-victory");
@@ -114,11 +114,16 @@ function boss_dohook($hookname, $args)
     case "charstats":
       $bossname = get_module_pref("bossname");
       $bosslocation = get_module_pref("bosslocation");
+      $has_the_pokeball = get_module_pref("has_the_pokeball");
+      $pokeball_count = $session['user']['dragonkills'];
+      if ($has_the_pokeball){
+        $pokeball_count++;
+      }
       addcharstat("Informacje o bossie");
       addcharstat("Nazwa", $bossname == "" ? "Nieznana" : $bossname);
       addcharstat("Lokalizacja", $bosslocation == "" ? "Nieznana" : $bosslocation);
-      addcharstat("Ilosc krysztalow", $session['user']['dragonkills']);
-      addcharstat("[FIXME] Pokeball znaleziony?", get_module_pref("has_the_pokeball") == 1 ? "Tak" : "Nie");
+      addcharstat("Ilosc krysztalow", $pokeball_count);
+      addcharstat("[FIXME] Pokeball znaleziony?", $has_the_pokeball == 1 ? "Tak" : "Nie");
       if (get_module_setting("dev")){
         if (get_module_setting("pokeball_walker")){
           addcharstat("[FIXME] Lokacja pokeballa", get_module_setting("pokeball_location"));
@@ -155,10 +160,17 @@ function boss_dohook($hookname, $args)
           if (get_module_setting("pokeball_walker")){
             // Hmm, powinno działać
             $current_location = get_module_setting("pokeball_location");
-            $sql = "SELECT value FROM module_settings WHERE setting = 'villagename' AND value <> '$current_location' ORDER BY RAND() LIMIT 1;";
-            $res = db_query($sql);
-            $row = db_fetch_assoc($res);
-            $next_location = $row['value'];
+            $cities = array(
+              "Dendralium",
+              "Deus Nocturnem",
+              "Glorfindal",
+              "Glukmoore",
+              "Kumrum",
+              "Nautileum",
+              "Qexelcrag",
+              "Romar"
+            );
+            $next_location = $cities[e_rand(0, count($cities) - 1)];
             addnews("%s`E znalazl pokeballa w `G%s`0", get_player_basename(), $current_location);
             set_module_setting("pokeball_location", $next_location);
           }
@@ -355,6 +367,8 @@ function boss_run()
       // Moved this hear to make some things easier.
       modulehook("dragonkill", array());
       invalidatedatacache("list.php-warsonline");
+      /* user must find a new pokeball after beating a boss */
+      set_module_pref("has_the_pokeball", false);
       /* set the new boss */
       boss_newboss();
       break;
