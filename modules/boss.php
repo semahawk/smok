@@ -30,6 +30,7 @@ function boss_getmoduleinfo()
       "pokeball_chance" => "Chance on finding the pokeball (in %),int|5",
       "pokeball_walker" => "Is the pokeball global and in a random forest?,bool|true",
       "pokeball_location" => "If it is global/random then where is it now?,string",
+      "multiplier" => "Exp/gold/atk/def/hp multiplier,float|2.0",
     ),
     "prefs" => array (
       "Walka z bossem,title",
