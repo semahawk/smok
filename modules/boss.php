@@ -35,12 +35,12 @@ function boss_getmoduleinfo()
     ),
     "prefs" => array (
       "Walka z bossem,title",
-      "bosscurr" => "The boss' 'num' that the user will be fighting,int|0",
-      "bossname" => "Name of the boss user would be fighting,text",
-      "bossweapon" => "The boss' weapon,text",
-      "bossdesc_before" => "The boss' text before beating him,text",
-      "bossdesc_after" => "The boss' text after beating the crap out of him,text",
-      "bosslocation" => "The boss' specific village in which it is to be seen,text",
+      "bosscurr" => "The boss' 'num' that the user will be fighting,int|-1",
+      "bossname" => "Name of the boss user would be fighting,text|Pierwszy boss",
+      "bossweapon" => "The boss' weapon,text|Bron pierwszego bossa",
+      "bossdesc_before" => "The boss' text before beating him,text|Opis przed pierwszym bossem",
+      "bossdesc_after" => "The boss' text after beating the crap out of him,text|Opis po pierwszym bossie",
+      "bosslocation" => "The boss' specific village in which it is to be seen,text|Romar",
       "has_the_pokeball" => "Whether the user has found the 'pokeball',bool|false",
     )
   );
