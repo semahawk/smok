@@ -38,7 +38,10 @@ function exp_for_next_level($curlevel, $curdk, $withmultiplier = true)
     if ($withmultiplier){
       if ($session['user']['dragonkills'] > 0){
         $dk = $session['user']['dragonkills'] == 0 ? 1 : $session['user']['dragonkills'];
-        $exparray[$key] *= $dk * get_module_setting("forest_multiplier", "boss");
+        $multiplier = get_module_setting("forest_multiplier", "boss");
+        if ($multiplier == 0)
+          $multiplier = 1;
+        $exparray[$key] *= $dk * $multiplier;
       }
     }
   }

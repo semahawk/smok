@@ -129,7 +129,10 @@ if ($op=="search"){
         $badguy = buffbadguy($badguy);
         /* Ciuf { */
         /* let's harden this guy up! */
-        $multiplier = $session['user']['dragonkills'] == 0 ? 1 : ($session['user']['dragonkills'] * get_module_setting("forest_multiplier", "boss"));
+        $forest_multiplier = get_module_setting("forest_multiplier", "boss");
+        if ($forest_multiplier == 0)
+          $forest_multiplier = 1;
+        $multiplier = $session['user']['dragonkills'] == 0 ? 1 : ($session['user']['dragonkills'] * $forest_multiplier);
         if (get_module_setting("dev", "boss")){
           output("`n`Ebefore: attack `G%d`E, def `G%d`E hp `G%d", $badguy['creatureattack'], $badguy['creaturedefense'], $badguy['creaturehealth']);
         }
