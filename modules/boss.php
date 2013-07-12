@@ -462,6 +462,17 @@ function boss_fetchboss()
   $badguy['creatureattack'] += $atkflux;
   $badguy['creaturedefense'] += $defflux;
   $badguy['creaturehealth'] += $hpflux;
+  /* also, multiply it's stats by the boss' multpiler */
+  $multiplier = $session['user']['dragonkills'] == 0 ? 1 : ($session['user']['dragonkills'] * get_module_setting("boss_multiplier", "boss"));
+  if (get_module_setting("dev", "boss")){
+    output("`n`Ebefore: attack `G%d`E, def `G%d`E hp `G%d", $badguy['creatureattack'], $badguy['creaturedefense'], $badguy['creaturehealth']);
+  }
+  $badguy['creatureattack'] *= $multiplier;
+  $badguy['creaturedefense'] *= $multiplier;
+  $badguy['creaturehealth'] *= $multiplier;
+  if (get_module_setting("dev", "boss")){
+    output("`n`Eafter: attack `G%d`E, def `G%d`E hp `G%d`n`n", $badguy['creatureattack'], $badguy['creaturedefense'], $badguy['creaturehealth']);
+  }
   $session['user']['badguy'] = createstring($badguy);
 }
 
