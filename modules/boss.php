@@ -264,6 +264,8 @@ function boss_run()
         "armor"           => 1,
         "weaponvalue"     => 1,
         "armorvalue"      => 1,
+        "weapondmg"       => 1,
+        "armordef"        => 1,
         "specialty"       => 1,
         "hitpoints"       => 1,
         "maxhitpoints"    => 1,
