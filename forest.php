@@ -129,18 +129,16 @@ if ($op=="search"){
         $badguy = buffbadguy($badguy);
         /* Ciuf { */
         /* let's harden this guy up! */
-        $multiplier = $session['user']['dragonkills'] == 0 ? 1 : ($session['user']['dragonkills'] * get_module_setting("multiplier", "boss"));
+        $multiplier = $session['user']['dragonkills'] == 0 ? 1 : ($session['user']['dragonkills'] * get_module_setting("forest_multiplier", "boss"));
         if (get_module_setting("dev", "boss")){
-          output("`n`Ebefore: exp `G%d`E, gold `G%d`E, attack `G%d`E, def `G%d`E hp `G%d", $badguy['creatureexp'], $badguy['creaturegold'], $badguy['creatureattack'], $badguy['creaturedefense'], $badguy['creaturehealth']);
+          output("`n`Ebefore: attack `G%d`E, def `G%d`E hp `G%d", $badguy['creatureattack'], $badguy['creaturedefense'], $badguy['creaturehealth']);
         }
         /* możliwe, że o którymś stacie zapomniałem */
-        $badguy['creatureexp']     *= $multiplier;
-        $badguy['creaturegold']    *= $multiplier;
         $badguy['creatureattack']  *= $multiplier;
         $badguy['creaturedefense'] *= $multiplier;
         $badguy['creaturehealth']  *= $multiplier;
         if (get_module_setting("dev", "boss")){
-          output("`n`Eafter: exp `G%d`E, gold `G%d`E, attack `G%d`E, def `G%d`E hp `G%d`n`n", $badguy['creatureexp'], $badguy['creaturegold'], $badguy['creatureattack'], $badguy['creaturedefense'], $badguy['creaturehealth']);
+          output("`n`Eafter: attack `G%d`E, def `G%d`E hp `G%d`n`n", $badguy['creatureattack'], $badguy['creaturedefense'], $badguy['creaturehealth']);
         }
         /* heh, powinno działać :D */
         /* Ciuf } */
