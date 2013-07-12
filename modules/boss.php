@@ -26,10 +26,10 @@ function boss_getmoduleinfo()
     "download" => "example.com",
     "settings" => array (
       "Walka z Bossem,title",
-      "dev" => "Wersja developerska,bool|true",
+      "dev" => "Wersja developerska,bool|1",
       "pokeball_chance" => "Chance on finding the pokeball (in %),int|5",
-      "pokeball_walker" => "Is the pokeball global and in a random forest?,bool|true",
-      "pokeball_location" => "If it is global/random then where is it now?,string",
+      "pokeball_walker" => "Is the pokeball global and in a random forest?,bool|1",
+      "pokeball_location" => "If it is global/random then where is it now?,text|Nautileum",
       "forest_multiplier" => "Exp needed/atk/def/hp for forest creatures multiplier,float|2.0",
       "boss_multiplier" => "Boss' atk/def/hp multiplier,float|2.0",
     ),
@@ -41,7 +41,7 @@ function boss_getmoduleinfo()
       "bossdesc_before" => "The boss' text before beating him,text|Opis przed pierwszym bossem",
       "bossdesc_after" => "The boss' text after beating the crap out of him,text|Opis po pierwszym bossie",
       "bosslocation" => "The boss' specific village in which it is to be seen,text|Romar",
-      "has_the_pokeball" => "Whether the user has found the 'pokeball',bool|false",
+      "has_the_pokeball" => "Whether the user has found the 'pokeball',bool|0",
     )
   );
 
@@ -115,7 +115,7 @@ function boss_dohook($hookname, $args)
       if ((($session['user']['level'] >= 15) &&
            ($session['user']['seendragon'] == 0) &&
            ($session['user']['location'] == get_module_pref("bosslocation") || $session['user']['dragonkills'] == 0) &&
-           (get_module_pref("has_the_pokeball") == 1)) ||
+            get_module_pref("has_the_pokeball")) ||
             get_module_setting("dev")){
         addnav("Walcz");
         addnav("`@Walcz z bossem!`0", "runmodule.php?module=boss&op=enter");
