@@ -115,7 +115,7 @@ function boss_dohook($hookname, $args)
       if ((($session['user']['level'] >= 15) &&
            ($session['user']['seendragon'] == 0) &&
            ($session['user']['location'] == get_module_pref("bosslocation") || $session['user']['dragonkills'] == 0) &&
-            get_module_pref("has_the_pokeball")) ||
+           (get_module_pref("has_the_pokeball") == 1)) ||
             get_module_setting("dev")){
         addnav("Walcz");
         addnav("`@Walcz z bossem!`0", "runmodule.php?module=boss&op=enter");
@@ -126,7 +126,9 @@ function boss_dohook($hookname, $args)
       $bosslocation = get_module_pref("bosslocation");
       $has_the_pokeball = get_module_pref("has_the_pokeball");
       $pokeball_count = $session['user']['dragonkills'];
-      if ($has_the_pokeball){
+      addcharstat("session dragonkills", $session['user']['dragonkills']);
+      addcharstat("has the pokeball", $has_the_pokeball);
+      if ($has_the_pokeball == 1){
         $pokeball_count++;
       }
       addcharstat("Informacje o bossie");
@@ -166,7 +168,7 @@ function boss_dohook($hookname, $args)
       if ($canshoot){
         if (e_rand(0, 100) <= get_module_setting("pokeball_chance")){
           output("`n`e[FIXME] `GBRAWO! `EOdnajdujesz pokeballa!`n`n");
-          set_module_pref("has_the_pokeball", true);
+          set_module_pref("has_the_pokeball", 1);
           if (get_module_setting("pokeball_walker")){
             // <s>Hmm, powinno działać</s>
             //         WRONG!
@@ -379,7 +381,7 @@ function boss_run()
       modulehook("dragonkill", array());
       invalidatedatacache("list.php-warsonline");
       /* user must find a new pokeball after beating a boss */
-      set_module_pref("has_the_pokeball", false);
+      set_module_pref("has_the_pokeball", 0);
       /* set the new boss */
       boss_newboss();
       break;
