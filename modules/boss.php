@@ -35,12 +35,12 @@ function boss_getmoduleinfo()
     ),
     "prefs" => array (
       "Walka z bossem,title",
-      "bossnum" => "Order in which it appears,int|",
-      "bossname" => "Name of the boss user would be fighting,string",
-      "bossweapon" => "The boss' weapon,string",
-      "bossdesc_before" => "The boss' text before beating him,string",
-      "bossdesc_after" => "The boss' text after beating the crap out of him,string",
-      "bosslocation" => "The boss' specific village in which it is to be seen,string",
+      "bosscurr" => "The boss' 'num' that the user will be fighting,int|0",
+      "bossname" => "Name of the boss user would be fighting,text",
+      "bossweapon" => "The boss' weapon,text",
+      "bossdesc_before" => "The boss' text before beating him,text",
+      "bossdesc_after" => "The boss' text after beating the crap out of him,text",
+      "bosslocation" => "The boss' specific village in which it is to be seen,text",
       "has_the_pokeball" => "Whether the user has found the 'pokeball',bool|false",
     )
   );
@@ -57,7 +57,6 @@ function boss_install()
 
   $sql_create = "CREATE TABLE IF NOT EXISTS " . db_prefix("bosses") . "(\n" .
                   "bossid int(11) primary key auto_increment,\n" .
-                  "bossnum int(11) not null,\n" .
                   "bossname varchar(255) not null,\n" .
                   "bossweapon varchar(255) not null,\n" .
                   "bossdesc_before text not null,\n" .
@@ -87,7 +86,7 @@ function boss_install()
    *       ale czemuś, nie wiedzieć czemu, mam syntax errory */
   $num = 0;
   foreach ($bosses as $name => $more){
-    db_query("INSERT INTO `" . db_prefix("bosses") . "` (bossid, bossnum, bossname, bossweapon, bossdesc_before, bossdesc_after, bosslocation) VALUES(NULL, '$num', '$name', '$more[0]', '$more[1]', '$more[2]', '$more[3]');\n");
+    db_query("INSERT INTO `" . db_prefix("bosses") . "` (bossid, bossname, bossweapon, bossdesc_before, bossdesc_after, bosslocation) VALUES(NULL, '$name', '$more[0]', '$more[1]', '$more[2]', '$more[3]');\n");
     $num++;
   }
 
@@ -169,7 +168,9 @@ function boss_dohook($hookname, $args)
           output("`n`e[FIXME] `GBRAWO! `EOdnajdujesz pokeballa!`n`n");
           set_module_pref("has_the_pokeball", true);
           if (get_module_setting("pokeball_walker")){
-            // Hmm, powinno działać
+            // <s>Hmm, powinno działać</s>
+            //         WRONG!
+            //         Nie działa, lol
             $current_location = get_module_setting("pokeball_location");
             $cities = array(
               "Dendralium",
@@ -334,8 +335,7 @@ function boss_run()
         $session['user']['gems'] += 1;
       }
 
-      $session['user']['maxhitpoints'] = 10 + $hpgain['dkpoints'] +
-        $hpgain['extra'];
+      $session['user']['maxhitpoints'] = 10 + $hpgain['dkpoints'] + $hpgain['extra'];
       $session['user']['hitpoints'] = $session['user']['maxhitpoints'];
 
       // Sanity check
@@ -420,7 +420,8 @@ function boss_run()
 }
 
 /*
- * Zapisuje w sesji bossa który bądź jest w prefach, a jeśli nie, to losuje go.
+ * Zapisuje w sesji bossa który bądź jest w prefach, a jeśli nie, to następnego 
+ * co jest w kolejce.
  */
 function boss_fetchboss()
 {
@@ -430,8 +431,9 @@ function boss_fetchboss()
   $weapon = "";
 
   if (get_module_pref("bossname") == NULL){
-    /* zgarniamy losowego bossa */
-    $sql = "SELECT * FROM " . db_prefix("bosses") . " ORDER BY RAND() LIMIT 1;";
+    /* zgarniamy aktualnego bossa */
+    $curr = get_module_pref("bosscurr");
+    $sql = "SELECT * FROM " . db_prefix("bosses") . " WHERE bossid = '$curr' LIMIT 1;";
     $res = db_query($sql);
     $row = db_fetch_assoc($res);
     $name = $row['bossname'];
@@ -486,15 +488,24 @@ function boss_fetchboss()
 }
 
 /*
- * Zapisuje w prefach losowego bossa.
+ * Zapisuje w prefach nastepnego bossa.
  */
 function boss_newboss()
 {
-  /* zgarniamy losowego bossa */
-  $sql = "SELECT * FROM " . db_prefix("bosses") . " ORDER BY RAND() LIMIT 1;";
+  /* zgarniamy nastepnego w kolejce bossa */
+  $nextnum = get_module_pref("bosscurr") + 1;
+  $sql = "SELECT * FROM " . db_prefix("bosses") . " WHERE bossid >= '$nextnum' ORDER BY bossid ASC LIMIT 1;";
   $res = db_query($sql);
   $row = db_fetch_assoc($res);
+  if (db_affected_rows() == 0){
+    /* lecimy od początku z kolejką
+     * chociaż, nigdy nie powinniśmy się tutaj dostać.. */
+    $sql = "SELECT * FROM " . db_prefix("bosses") . " ORDER BY bossid ASC LIMIT 1;";
+    $res = db_query($sql);
+    $row = db_fetch_assoc($res);
+  }
   /* i zapisujemy w prefach */
+  set_module_pref("bosscurr", $row['bossid']);
   set_module_pref("bossname", $row['bossname']);
   set_module_pref("bossweapon", $row['bossweapon']);
   set_module_pref("bossdesc_before", $row['bossdesc_before']);

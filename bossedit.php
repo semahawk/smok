@@ -19,7 +19,6 @@ $id = httpget('id');
 
 $editarray = array(
 	"Bosses,title",
-  "bossnum" => "Kolejnosc wystapienia,int|",
   "bossname" => "Nazwa bossa,text|",
   "bossdesc_before" => "Tekst przed walka,text|",
   "bossdesc_after" => "Tekst po walce,text|",
@@ -33,7 +32,6 @@ superusernav();
 addnav("Funkcje");
 
 if ($op == "save") {
-  $num = httppost('bossnum');
   $name = httppost('bossname');
   $desc_before = httppost('bossdesc_before');
   $desc_after = httppost('bossdesc_after');
@@ -44,11 +42,11 @@ if ($op == "save") {
   $ref = '';
 
   if ((int)$id == 0) {
-    $sql = "INSERT INTO " . db_prefix("bosses") . " (bossid, bossnum, bossname, bossdesc_before, bossdesc_after, bossweapon, bosslocation) VALUES ($id, $num, '$name', '$desc_before', '$desc_after', '$weapon', '$location');";
+    $sql = "INSERT INTO " . db_prefix("bosses") . " (bossid, bossname, bossdesc_before, bossdesc_after, bossweapon, bosslocation) VALUES ($id, '$name', '$desc_before', '$desc_after', '$weapon', '$location');";
     $note = "`^Dodano bossa.`0";
     $errnote = "`\$Problem z dodaniem bossa.`0";
   } else {
-    $sql = "UPDATE " . db_prefix("bosses") . " SET bossid=$id, bossnum=$num, bossname='$name', bossdesc_before='$desc_before', bossdesc_after='$desc_after', bossweapon='$weapon', bosslocation='$location' WHERE bossid=$id";
+    $sql = "UPDATE " . db_prefix("bosses") . " SET bossid=$id, bossname='$name', bossdesc_before='$desc_before', bossdesc_after='$desc_after', bossweapon='$weapon', bosslocation='$location' WHERE bossid=$id";
     $note = "`^Zmodyfikowano bossa.`0";
     $errnote = "`\$Problem z modyfikacja bossa.`0";
   }
@@ -72,7 +70,7 @@ if ($op == ""){
   $query = db_query($sql);
   output("`@`c`b-= Edytor Bossow =-`b`c");
   rawoutput("<table border='0' cellspacing='0' cellpadding='2' width='100%' align='center'>");
-  rawoutput("<tr class='trhead'><td>Akcja</td><td>Kolejnosc</td><td>Nazwa</td><td>Opis przed spotkaniem</td><td>Opis po zabiciu</td><td>Bron</td><td>Lokacja</td></tr>");
+  rawoutput("<tr class='trhead'><td>Akcja</td><td>Nazwa</td><td>Opis przed spotkaniem</td><td>Opis po zabiciu</td><td>Bron</td><td>Lokacja</td></tr>");
   $i = 0;
   while ($row = db_fetch_assoc($query)){
     $id = $row['bossid'];
@@ -80,7 +78,6 @@ if ($op == ""){
     addnav("", "bossedit.php?op=edit&id=$id");
     addnav("", "bossedit.php?op=delete&id=$id");
     rawoutput("<td>[<a href='bossedit.php?op=edit&id=$id'>Edytuj</a> | <a href='bossedit.php?op=delete&id=$id' onClick='return confirm(\"Na pewno usunac?\");'>Usun</a>]</td>");
-    rawoutput("<td>$row[bossnum]</td>");
     rawoutput("<td>$row[bossname]</td>");
     rawoutput("<td>$row[bossdesc_before]</td>");
     rawoutput("<td>$row[bossdesc_after]</td>");
@@ -97,11 +94,11 @@ if ($op == ""){
 } elseif ($op == "edit" || $op == "add") {
 	require_once("lib/showform.php");
   if ($op == "edit"){
-    $sql = "SELECT * FROM " . db_prefix("bosses") . " WHERE bossid='$id'";
+    $sql = "SELECT * FROM " . db_prefix("bosses") . " WHERE bossid = '$id'";
     $result = db_query($sql);
     $row = db_fetch_assoc($result);
   } elseif ($op == "add") {
-    $row = array( "bossnum" => 0, "bossname" => "", "bossdesc_before" => "", "bossdesc_after" => "", "bosslocation" => "", "bossweapon" => "");
+    $row = array("bossname" => "", "bossdesc_before" => "", "bossdesc_after" => "", "bosslocation" => "", "bossweapon" => "");
     $id = 0;
   }
   rawoutput("<form action='bossedit.php?op=save&id=$id' method='POST'>");
