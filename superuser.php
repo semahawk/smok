@@ -54,6 +54,9 @@ if ($session['user']['superuser'] & SU_IS_TRANSLATOR) addnav("U?Untranslated Tex
 addnav("Editors");
 if ($session['user']['superuser'] & SU_EDIT_USERS) addnav("User Editor","user.php");
 if ($session['user']['superuser'] & SU_EDIT_USERS) addnav("Title Editor","titleedit.php");
+/* Ciuf { */
+if ($session['user']['superuser'] & SU_EDIT_USERS) addnav("Boss Editor","bossedit.php");
+/* Ciuf } */
 if ($session['user']['superuser'] & SU_EDIT_CREATURES) addnav("E?Creature Editor","creatures.php");
 if ($session['user']['superuser'] & SU_EDIT_MOUNTS) addnav("Mount Editor","mounts.php");
 if ($session['user']['superuser'] & SU_EDIT_CREATURES) addnav("Taunt Editor","taunt.php");

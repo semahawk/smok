@@ -35,9 +35,11 @@ function boss_getmoduleinfo()
     ),
     "prefs" => array (
       "Walka z bossem,title",
+      "bossnum" => "Order in which it appears,int|",
       "bossname" => "Name of the boss user would be fighting,string",
       "bossweapon" => "The boss' weapon,string",
-      "bossdesc" => "The boss' text after beating him,string",
+      "bossdesc_before" => "The boss' text before beating him,string",
+      "bossdesc_after" => "The boss' text after beating the crap out of him,string",
       "bosslocation" => "The boss' specific village in which it is to be seen,string",
       "has_the_pokeball" => "Whether the user has found the 'pokeball',bool|false",
     )
@@ -55,9 +57,11 @@ function boss_install()
 
   $sql_create = "CREATE TABLE IF NOT EXISTS " . db_prefix("bosses") . "(\n" .
                   "bossid int(11) primary key auto_increment,\n" .
+                  "bossnum int(11) not null,\n" .
                   "bossname varchar(255) not null,\n" .
                   "bossweapon varchar(255) not null,\n" .
-                  "bossdesc text not null,\n" .
+                  "bossdesc_before text not null,\n" .
+                  "bossdesc_after text not null,\n" .
                   "bosslocation varchar(255) not null\n" .
                 ");\n";
 
@@ -66,20 +70,25 @@ function boss_install()
 
   $bosses = array(
     "[FIXME] Szkieletor" => array("[FIXME] Szkieletowate lapska",
+      "`EOpis przed zabiciem `GSZKIELETORA",
       "`EOpis po zabiciu `GSZKIELETORA",
       "Deus Nocturnem"),
     "[FIXME] Ciemny Elf" => array("[FIXME] Ciemny luk",
+      "`EOpis przed zabiciem `GCIEMNEGO ELFA",
       "`EOpis po zabiciu `GCIEMNEGO ELFA",
       "Glorfindal"),
     "[FIXME] Kraken" => array("[FIXME] Macki",
+      "`EOpis przed zabiciem `GKRAKENA",
       "`EOpis po zabiciu `GKRAKENA",
       "Nautileum")
   );
 
   /* TODO: to można by było wrzucić jako całość do jednego stringa i raz wykonać
    *       ale czemuś, nie wiedzieć czemu, mam syntax errory */
+  $num = 0;
   foreach ($bosses as $name => $more){
-    db_query("INSERT INTO `" . db_prefix("bosses") . "` (bossid, bossname, bossweapon, bossdesc, bosslocation) VALUES(NULL, '$name', '$more[0]', '$more[1]', '$more[2]');\n");
+    db_query("INSERT INTO `" . db_prefix("bosses") . "` (bossid, bossnum, bossname, bossweapon, bossdesc_before, bossdesc_after, bosslocation) VALUES(NULL, '$num', '$name', '$more[0]', '$more[1]', '$more[2]', '$more[3]');\n");
+    $num++;
   }
 
   module_addeventhook("forest", "return 0;");
@@ -353,7 +362,7 @@ function boss_run()
       $session['user']['laston'] = date("Y-m-d H:i:s", strtotime("-1 day"));
       $session['user']['slaydragon'] = 1;
 
-      output("`n`n%s", get_module_pref("bossdesc"));
+      output("`n`n%s", get_module_pref("bossdesc_after"));
 
       // allow explanative text as well.
       modulehook("dragonkilltext");
@@ -376,7 +385,7 @@ function boss_run()
       break;
     case "enter":
       boss_fetchboss();
-      output("`c`GWYCZESANY `Etekst o tym jak to chcesz dowalic `GBOSSOWI `Eale sie cykasz i chyba zawrocisz`c");
+      output("%s`n", get_module_pref("bossdesc_before"));
       addnav("Zmierz sie z bossem", "$here&op=fight");
       addnav("Bierz tylek w troki", "$here&op=flee");
       break;
@@ -488,7 +497,8 @@ function boss_newboss()
   /* i zapisujemy w prefach */
   set_module_pref("bossname", $row['bossname']);
   set_module_pref("bossweapon", $row['bossweapon']);
-  set_module_pref("bossdesc", $row['bossdesc']);
+  set_module_pref("bossdesc_before", $row['bossdesc_before']);
+  set_module_pref("bossdesc_after", $row['bossdesc_after']);
   set_module_pref("bosslocation", $row['bosslocation']);
 }
 
