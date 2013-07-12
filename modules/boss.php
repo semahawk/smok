@@ -126,8 +126,6 @@ function boss_dohook($hookname, $args)
       $bosslocation = get_module_pref("bosslocation");
       $has_the_pokeball = get_module_pref("has_the_pokeball");
       $pokeball_count = $session['user']['dragonkills'];
-      addcharstat("session dragonkills", $session['user']['dragonkills']);
-      addcharstat("has the pokeball", $has_the_pokeball);
       if ($has_the_pokeball == 1){
         $pokeball_count++;
       }
@@ -261,6 +259,11 @@ function boss_run()
         "gold"            => 1,
         "goldinbank"      => 1,
         //"experience"      => 1, /* question mark */
+        "location"        => 1,
+        "weapon"          => 1,
+        "armor"           => 1,
+        "weaponvalue"     => 1,
+        "armorvalue"      => 1,
         "specialty"       => 1,
         "hitpoints"       => 1,
         "maxhitpoints"    => 1,
