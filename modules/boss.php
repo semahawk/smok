@@ -112,13 +112,15 @@ function boss_dohook($hookname, $args)
 
   switch ($hookname){
     case "forest":
-      if ((($session['user']['level'] >= 15) &&
-           ($session['user']['seendragon'] == 0) &&
-           ($session['user']['location'] == get_module_pref("bosslocation") || $session['user']['dragonkills'] == 0) &&
-           (get_module_pref("has_the_pokeball") == 1)) ||
-            get_module_setting("dev")){
-        addnav("Walcz");
-        addnav("`@Walcz z bossem!`0", "runmodule.php?module=boss&op=enter");
+      if ($session['user']['level'] >= 15){
+        if ($session['user']['seendragon'] == 0){
+          if ($session['user']['location'] == get_module_pref("bosslocation")){
+            if (get_module_pref("has_the_pokeball") == 1){
+              addnav("Walcz");
+              addnav("`@Walcz z bossem!`0", "runmodule.php?module=boss&op=enter");
+            }
+          }
+        }
       }
       break;
     case "charstats":
