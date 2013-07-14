@@ -41,7 +41,7 @@ function exp_for_next_level($curlevel, $curdk, $withmultiplier = true)
         $multiplier = get_module_setting("forest_multiplier", "boss");
         if ($multiplier == 0)
           $multiplier = 1;
-        $exparray[$key] *= $dk * $multiplier;
+        $exparray[$key] *= floor($dk * $multiplier);
       }
     }
   }
