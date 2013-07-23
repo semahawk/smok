@@ -47,7 +47,12 @@ function rep_dohook($hookname, $args)
   switch ($hookname){
     case "charstats":
       addcharstat("Reputacja");
-      addcharstat("Ilosc", get_module_pref('rep'));
+      addcharstat("Twoja", get_module_pref('rep'));
+      $city = get_module_pref('homecity', 'cities');
+      $sql = "select mf.value as city, sum(ms.value) as sum from module_userprefs as mf inner join module_userprefs as ms on (mf.userid = ms.userid and ms.setting = 'rep' and ms.value <> 0) where mf.setting = 'homecity' and mf.value = '$city' group by city order by sum desc";
+      $res = db_query($sql);
+      $row = db_fetch_assoc($res);
+      addcharstat("Miasta rodzinnego", $row['sum']);
       break;
   }
 
