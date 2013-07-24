@@ -390,7 +390,7 @@ function boss_run()
       /* user must find a new pokeball after beating a boss */
       set_module_pref("has_the_pokeball", 0);
       /* give him the reputation */
-      set_module_pref('rep', get_module_setting('rep_for_boss_kill', 'rep'), 'rep');
+      set_module_pref('rep', get_module_pref('rep', 'rep') + get_module_setting('rep_for_boss_kill', 'rep'), 'rep');
       /* set the new boss */
       boss_newboss();
       break;
