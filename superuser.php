@@ -56,6 +56,8 @@ if ($session['user']['superuser'] & SU_EDIT_USERS) addnav("User Editor","user.ph
 if ($session['user']['superuser'] & SU_EDIT_USERS) addnav("Title Editor","titleedit.php");
 /* Ciuf { */
 if ($session['user']['superuser'] & SU_EDIT_USERS) addnav("Boss Editor","bossedit.php");
+if ($session['user']['superuser'] & SU_MEGAUSER) addnav("Item Editor","eqitemsedit.php");
+if ($session['user']['superuser'] & SU_MEGAUSER) addnav("Stones Editor","eqstonesedit.php");
 /* Ciuf } */
 if ($session['user']['superuser'] & SU_EDIT_CREATURES) addnav("E?Creature Editor","creatures.php");
 if ($session['user']['superuser'] & SU_EDIT_MOUNTS) addnav("Mount Editor","mounts.php");

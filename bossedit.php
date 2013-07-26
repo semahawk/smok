@@ -2,7 +2,7 @@
 
 /*
  * Author: Ciuf
- * Heavily based on bossedit.php by Lonny Luberts / JT Traub
+ * Heavily based on titleedit.php by Lonny Luberts / JT Traub
  */
 
 require_once("common.php");

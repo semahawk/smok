@@ -82,4 +82,12 @@ myDefine("MODULE_VERSION_TOO_LOW",16);
 myDefine("MODULE_ACTIVE",32);
 myDefine("MODULE_INJECTED",64);
 
+// Ciuf {
+myDefine("EQ_ATK", 1);
+myDefine("EQ_DEF", 2);
+myDefine("EQ_HP",  4);
+myDefine("EQ_FF",  8);
+myDefine("EQ_T",  16);
+// Ciuf }
+
 ?>
