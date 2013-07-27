@@ -290,7 +290,7 @@ function eq_run()
       db_query("DELETE FROM " . db_prefix("accounts_eqitems") . " WHERE itemid = '$id' AND acctid = '" . $session['user']['acctid'] . "' LIMIT 1");
       /* usuwamy też i z ogólnej bazy itemków, jeśli item był ulepszany */
       if ($item['implvl'] > 0){
-        db_query("DELETE FROM " . db_prefix("eqitems") . " WHERE id = '$id'");
+        db_query("DELETE FROM " . db_prefix("eqitems") . " WHERE id = '$id' LIMIT 1");
       }
       $session['user']['gold'] += $item['sellprice'];
       output("`EKowal gratuluje Ci sprzedazy!");
@@ -344,7 +344,7 @@ function eq_run()
             /* usuwamy z bazy ten itemek co user mial przed chwilka
              * ale ale, jesli poziom ulepszenia jest wiekszy od zero */
             if ($item['implvl'] > 0){
-              db_query("DELETE FROM " . db_prefix("eqitems") . " WHERE id = '" . $item['id'] . "'");
+              db_query("DELETE FROM " . db_prefix("eqitems") . " WHERE id = '" . $item['id'] . "' LIMIT 1");
             }
             /* zapisujemy nowy itemek w bazie */
             db_query("INSERT INTO " . db_prefix("eqitems") . "(name,cat,atkimpact,defimpact,hpimpact,ffimpact,timpact,inshop,buyprice,sellprice,droppable,dropchance,dropmindk,dropminrep,droprace,dropprof,implvlimpact) values('$newname','$item[cat]','$newatkimpact','$newdefimpact','$newhpimpact','$newffimpact','$newtimpact',0,'$item[buyprice]','$item[sellprice]',0,0,0,0,0,0,'$item[implvlimpact]')");
@@ -355,7 +355,7 @@ function eq_run()
             /* oooraz kamień którym się itemek ulepszało */
             /* megauser do testów */
             if (!($session['user']['superuser'] & SU_MEGAUSER)){
-              db_query("DELETE FROM " . db_prefix("accounts_eqstones") . " WHERE stoneid = '" . $stone['id'] . "' AND acctid = '" . $session['user']['acctid'] . "'");
+              db_query("DELETE FROM " . db_prefix("accounts_eqstones") . " WHERE stoneid = '" . $stone['id'] . "' AND acctid = '" . $session['user']['acctid'] . "' LIMIT 1");
             } else {
               output("`ePan jestes Megauser, wiec kamien nie zniknal :P");
             }
@@ -366,7 +366,7 @@ function eq_run()
               output("`eA kamien nie zniknal, panie Megauser :P");
             } else {
               /* usuwamy kamień z plecaczka */
-              db_query("DELETE FROM " . db_prefix("accounts_eqstones") . " WHERE stoneid = '" . $stone['id'] . "' AND acctid = '" . $session['user']['acctid'] . "'");
+              db_query("DELETE FROM " . db_prefix("accounts_eqstones") . " WHERE stoneid = '" . $stone['id'] . "' AND acctid = '" . $session['user']['acctid'] . "' LIMIT 1");
             }
           } else {
             output("`4Niestety, item sie spalil`n");
@@ -377,12 +377,12 @@ function eq_run()
               /* item znika z bazy tylko jeśli poziom ulepszenia jest większy od
                * zera */
               if ($item['implvl'] > 0){
-                db_query("DELETE FROM " . db_prefix("eqitems") . " WHERE id = '" . $item['id'] . "'");
+                db_query("DELETE FROM " . db_prefix("eqitems") . " WHERE id = '" . $item['id'] . "' LIMIT 1");
               }
               /* a z plecaczka użytkownika znika zawsze */
-              db_query("DELETE FROM " . db_prefix("accounts_eqitems") . " WHERE itemid = '" . $item['id'] . "' AND acctid = '" . $session['user']['acctid'] . "'");
+              db_query("DELETE FROM " . db_prefix("accounts_eqitems") . " WHERE itemid = '" . $item['id'] . "' AND acctid = '" . $session['user']['acctid'] . "' LIMIT 1");
               /* usuwamy kamień z plecaczka */
-              db_query("DELETE FROM " . db_prefix("accounts_eqstones") . " WHERE stoneid = '" . $stone['id'] . "' AND acctid = '" . $session['user']['acctid'] . "'");
+              db_query("DELETE FROM " . db_prefix("accounts_eqstones") . " WHERE stoneid = '" . $stone['id'] . "' AND acctid = '" . $session['user']['acctid'] . "' LIMIT 1");
             }
           }
           addnav("Powrot", "$here&op=enter");
