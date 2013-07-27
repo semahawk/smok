@@ -211,7 +211,6 @@ function eq_run()
       output("`n`n`c`b`4Nie znaleziono kamienia o podanym ID!`b`c");
       addnav("Powrot", "$here&op=enter");
     } else {
-      //$sql = "SELECT * FROM " . db_prefix("eqitems") . " WHERE id = '" . $_POST['item'] . "' LIMIT 1";
       $sql = "SELECT a.implvl, e.* FROM " . db_prefix("accounts_eqitems") . " AS a INNER JOIN " . db_prefix("eqitems") . " AS e ON (a.itemid = e.id) WHERE e.id = '" . $_POST['item'] . "' LIMIT 1";
       $res = db_query($sql);
       $item = db_fetch_assoc($res);
@@ -219,61 +218,78 @@ function eq_run()
         output("`n`n`c`b`4Nie znaleziono przedmiotu o podanym ID!`b`c");
         addnav("Powrot", "$here&op=enter");
       } else {
-        $rand = e_rand(0, 100);
-        if ($rand <= $stone['impchance']){
-          output("`@Udalo sie!`n");
-          $newatkimpact = $item['atkimpact'];
-          $newdefimpact = $item['defimpact'];
-          $newhpimpact  = $item['hpimpact'];
-          $newffimpact  = $item['ffimpact'];
-          $newtimpact   = $item['timpact'];
-          if ($item['implvlimpact'] & EQ_ATK)
-            $newatkimpact += $stone['implvlinc'];
-          if ($item['implvlimpact'] & EQ_DEF)
-            $newdefimpact += $stone['implvlinc'];
-          if ($item['implvlimpact'] & EQ_HP)
-            $newhpimpact  += $stone['implvlinc'];
-          if ($item['implvlimpact'] & EQ_FF)
-            $newffimpact  += $stone['implvlinc'];
-          if ($item['implvlimpact'] & EQ_T)
-            $newtimpact   += $stone['implvlinc'];
-          /* pozbywamy się tego +cosia */
-          $item['name'] = preg_replace('/\s+\+(\d+)/', '', $item['name']);
-          $newname      = $item['name'] . " +" . ($item['implvl'] + 1);
-          /* usuwamy z bazy ten itemek co user mial przed chwilka
-           * ale ale, jesli poziom ulepszenia jest wiekszy od zero */
-          if ($item['implvl'] > 0){
-            db_query("DELETE FROM " . db_prefix("eqitems") . " WHERE id = '" . $item['id'] . "'");
-          }
-          /* zapisujemy nowy itemek w bazie */
-          db_query("INSERT INTO " . db_prefix("eqitems") . "(name,cat,atkimpact,defimpact,hpimpact,ffimpact,timpact,inshop,buyprice,sellprice,droppable,dropchance,dropmindk,dropminrep,droprace,dropprof,implvlimpact) values('$newname','$item[cat]','$newatkimpact','$newdefimpact','$newhpimpact','$newffimpact','$newtimpact','$item[inshop]','$item[buyprice]','$item[sellprice]','0','0','0','0','0','0','$item[implvlimpact]')");
-          /* db_insert_id() robi.. o to: Get the ID generated in the last query */
-          db_query("INSERT INTO " . db_prefix("accounts_eqitems") . "(acctid, itemid, implvl) values('".$session['user']['acctid']."', '" . db_insert_id() . "', '" . ($item['implvl'] + 1) . "')");
-          /* teraz jeszcze trzeba usunac ten poprzedni itemek */
-          db_query("DELETE FROM " . db_prefix("accounts_eqitems") . " WHERE itemid = '" . $item['id'] . "'");
-          /* oooraz kamień którym się itemek ulepszało (no, chyba żeś megauser) */
-          if (!($session['user']['superuser'] & SU_MEGAUSER)){
-            db_query("DELETE FROM " . db_prefix("accounts_eqstones") . " WHERE stoneid = '" . $stone['id'] . "' AND acctid = '" . $session['user']['acctid'] . "'");
-          } else {
-            output("`ePan jestes Admin, wiec kamien nie zniknal :P");
-          }
-        } else if ($rand - $stone['impchance'] < 100 - $stone['impchance'] - $stone['burnchance']){
-          output("`7Bums, nic sie nie stalo`n");
+        /* sprawdzamy czy faktycznie można użyć kamienia na tym itemku */
+        if ($item['implvl'] > $stone['maximplvl']){
+          output("`n`n`c`b`4Blad!`b`n`n`4Nie mozna uzyc kamienia '$stone[name]' na przedmiocie '$item[name]'!`nPrzedmiot ma za wyskoki poziom!`c");
+          addnav("Powrot", "$here&op=enter");
         } else {
-          output("`4Niestety, item sie spalil`n");
-          if ($session['user']['superuser'] & SU_MEGAUSER){
-            output("`eAlbo i nie, panie Adminie :P");
-          } else {
-            /* item znika z bazy tylko jeśli poziom ulepszenia jest większy od
-             * zera */
+          $rand = e_rand(0, 100);
+          if ($rand <= $stone['impchance']){
+            output("`@Udalo sie!`n");
+            $newatkimpact = $item['atkimpact'];
+            $newdefimpact = $item['defimpact'];
+            $newhpimpact  = $item['hpimpact'];
+            $newffimpact  = $item['ffimpact'];
+            $newtimpact   = $item['timpact'];
+            if ($item['implvlimpact'] & EQ_ATK)
+              $newatkimpact += $stone['implvlinc'];
+            if ($item['implvlimpact'] & EQ_DEF)
+              $newdefimpact += $stone['implvlinc'];
+            if ($item['implvlimpact'] & EQ_HP)
+              $newhpimpact  += $stone['implvlinc'];
+            if ($item['implvlimpact'] & EQ_FF)
+              $newffimpact  += $stone['implvlinc'];
+            if ($item['implvlimpact'] & EQ_T)
+              $newtimpact   += $stone['implvlinc'];
+            /* pozbywamy się tego +cosia */
+            $item['name'] = preg_replace('/\s+\+(\d+)/', '', $item['name']);
+            $newname      = $item['name'] . " +" . ($item['implvl'] + 1);
+            /* usuwamy z bazy ten itemek co user mial przed chwilka
+             * ale ale, jesli poziom ulepszenia jest wiekszy od zero */
             if ($item['implvl'] > 0){
               db_query("DELETE FROM " . db_prefix("eqitems") . " WHERE id = '" . $item['id'] . "'");
             }
-            /* a z plecaczka użytkownika znika zawsze */
-            db_query("DELETE FROM " . db_prefix("accounts_eqitems") . " WHERE itemid = '" . $item['id'] . "' AND acctid = '" . $session['user']['acctid'] . "'");
+            /* zapisujemy nowy itemek w bazie */
+            db_query("INSERT INTO " . db_prefix("eqitems") . "(name,cat,atkimpact,defimpact,hpimpact,ffimpact,timpact,inshop,buyprice,sellprice,droppable,dropchance,dropmindk,dropminrep,droprace,dropprof,implvlimpact) values('$newname','$item[cat]','$newatkimpact','$newdefimpact','$newhpimpact','$newffimpact','$newtimpact','$item[inshop]','$item[buyprice]','$item[sellprice]','0','0','0','0','0','0','$item[implvlimpact]')");
+            /* db_insert_id() robi.. o to: Get the ID generated in the last query */
+            db_query("INSERT INTO " . db_prefix("accounts_eqitems") . "(acctid, itemid, implvl) values('".$session['user']['acctid']."', '" . db_insert_id() . "', '" . ($item['implvl'] + 1) . "')");
+            /* teraz jeszcze trzeba usunac ten poprzedni itemek */
+            db_query("DELETE FROM " . db_prefix("accounts_eqitems") . " WHERE itemid = '" . $item['id'] . "'");
+            /* oooraz kamień którym się itemek ulepszało */
+            /* megauser do testów */
+            if (!($session['user']['superuser'] & SU_MEGAUSER)){
+              db_query("DELETE FROM " . db_prefix("accounts_eqstones") . " WHERE stoneid = '" . $stone['id'] . "' AND acctid = '" . $session['user']['acctid'] . "'");
+            } else {
+              output("`ePan jestes Megauser, wiec kamien nie zniknal :P");
+            }
+          } else if ($rand < 100 - $stone['burnchance']){
+            output("`7Bums, nic sie nie stalo`n");
+            /* megauser do testów */
+            if ($session['user']['superuser'] & SU_MEGAUSER){
+              output("`eA kamien nie zniknal, panie Megauser :P");
+            } else {
+              /* usuwamy kamień z plecaczka */
+              db_query("DELETE FROM " . db_prefix("accounts_eqstones") . " WHERE stoneid = '" . $stone['id'] . "' AND acctid = '" . $session['user']['acctid'] . "'");
+            }
+          } else {
+            output("`4Niestety, item sie spalil`n");
+            /* megauser do testów */
+            if ($session['user']['superuser'] & SU_MEGAUSER){
+              output("`eAlbo i nie, panie Megauser :P");
+            } else {
+              /* item znika z bazy tylko jeśli poziom ulepszenia jest większy od
+               * zera */
+              if ($item['implvl'] > 0){
+                db_query("DELETE FROM " . db_prefix("eqitems") . " WHERE id = '" . $item['id'] . "'");
+              }
+              /* a z plecaczka użytkownika znika zawsze */
+              db_query("DELETE FROM " . db_prefix("accounts_eqitems") . " WHERE itemid = '" . $item['id'] . "' AND acctid = '" . $session['user']['acctid'] . "'");
+              /* usuwamy kamień z plecaczka */
+              db_query("DELETE FROM " . db_prefix("accounts_eqstones") . " WHERE stoneid = '" . $stone['id'] . "' AND acctid = '" . $session['user']['acctid'] . "'");
+            }
           }
+          addnav("Powrot", "$here&op=enter");
         }
-        addnav("Powrot", "$here&op=enter");
       }
     }
   }
@@ -285,7 +301,6 @@ function eq_run()
     addnav("", "$here&op=doimp");
     rawoutput("<form action='$here&op=doimp' method='post'>");
     rawoutput("<select id='item' name='item'>");
-    rawoutput("<option value='-1' rel='{ \"name\": \"-\", \"atkimpact\": 0, \"defimpact\": 0, \"hpimpact\": 0, \"ffimpact\": 0, \"timpact\": 0, \"implvlimpact\": 0 }'>---</option>");
     while ($row = db_fetch_assoc($res)){
       rawoutput("<option value='$row[itemid]' rel='
         {
@@ -301,22 +316,29 @@ function eq_run()
     }
     rawoutput("</select>");
 
-    $sql = "SELECT * FROM " . db_prefix("accounts_eqstones") . " AS a INNER JOIN " . db_prefix("eqstones") . " AS e ON (a.stoneid = e.id) WHERE a.acctid = '" . $session['user']['acctid'] . "'";
-    $res = db_query($sql);
-
     output("`n`n`n`EKowal mowi `GWybierz kamien`E`n`n");
     rawoutput("<select id='stone' name='stone'>");
-    rawoutput("<option value='-1' rel='{ \"implvlinc\": 0 }'>---</option>");
+    rawoutput("<option value='-1' rel='{ \"name\": \"-\", \"implvlinc\": 0, \"impchance\": 0, \"burnchance\": 0, \"maximplvl\": 0 }'>---</option>");
+    rawoutput("</select><br><br><br>");
+
+    /* diiiiiiiiiiiiiiiirty */
+    $sql = "SELECT * FROM " . db_prefix("accounts_eqstones") . " AS a INNER JOIN " . db_prefix("eqstones") . " AS e ON (a.stoneid = e.id) WHERE a.acctid = '" . $session['user']['acctid'] . "'";
+    $res = db_query($sql);
+    rawoutput("<select id='allstones' style='display: none;'>");
     while ($row = db_fetch_assoc($res)){
       rawoutput("<option value='$row[stoneid]' rel='
         {
           \"name\": \"$row[name]\",
           \"impchance\": \"$row[impchance]\",
           \"burnchance\": \"$row[burnchance]\",
-          \"implvlinc\": \"$row[implvlinc]\"
+          \"implvlinc\": \"$row[implvlinc]\",
+          \"maximplvl\": \"$row[maximplvl]\"
         }'>$row[name]</option>");
     }
-    rawoutput("</select><br><br><br>");
+    rawoutput("</select>");
+    /* diiiiiiiiiiiiiiiiiiiiiirty ends here */
+    /* hopefully ... */
+
     output("`eProdukt finalny:`n");
     rawoutput("<table border='0' cellspacing='0' cellpadding='2' width='100%' align='center'>");
     rawoutput("<tr class='trhead'><td>Nazwa</td><td>Wplyw na atak</td><td>Wplyw na obrone</td><td>Wplyw na max. HP</td><td>Wplyw na LW</td><td>Wplyw na podroze</td><td style='font-weight: bold;'>Szansa na powodzenie</td><td style='font-weight: bold;'>Szansa na spalenie</td></tr>");
@@ -330,10 +352,58 @@ function eq_run()
     (
       "<script type='text/javascript'>
         $(document).ready(function(){
+          function setStones()
+          {
+            var item = $.parseJSON($('option:selected', $('#item')).attr('rel'));
+            $('#stone').empty();
+            $('#allstones').each(function(){
+              $('#allstones').children('option').each(function(){
+                if ($.parseJSON($(this).attr('rel')).maximplvl >= item.implvl){
+                  $(this).clone().appendTo('#stone');
+                }
+              });
+            });
+          }
+
+          setStones();
+          var item = $.parseJSON($('option:selected', $('#item')).attr('rel'));
+          var stone = $.parseJSON($('option:selected', $('#stone')).attr('rel'));
+          $('#name').html(item.name);
+          $('#atkimpact').html(item.atkimpact);
+          if (item.implvlimpact & " . EQ_ATK . "){
+            $('#atkimpact').html(parseInt(item.atkimpact) + parseInt(stone.implvlinc));
+          } else {
+            $('#atkimpact').html(item.atkimpact);
+          }
+          if (item.implvlimpact & " . EQ_DEF . "){
+            $('#defimpact').html(parseInt(item.defimpact) + parseInt(stone.implvlinc));
+          } else {
+            $('#defimpact').html(item.defimpact);
+          }
+          if (item.implvlimpact & " . EQ_HP . "){
+            $('#hpimpact').html(parseInt(item.hpimpact) + parseInt(stone.implvlinc));
+          } else {
+            $('#hpimpact').html(item.hpimpact);
+          }
+          if (item.implvlimpact & " . EQ_FF . "){
+            $('#ffimpact').html(parseInt(item.ffimpact) + parseInt(stone.implvlinc));
+          } else {
+            $('#ffimpact').html(item.ffimpact);
+          }
+          if (item.implvlimpact & " . EQ_T . "){
+            $('#timpact').html(parseInt(item.timpact) + parseInt(stone.implvlinc));
+          } else {
+            $('#timpact').html(item.timpact);
+          }
+          $('#impchance').html(stone.impchance);
+          $('#burnchance').html(stone.burnchance);
+
           $('#item').change(function(){
+            setStones();
             var item = $.parseJSON($('option:selected', this).attr('rel'));
-            var stone = $.parseJSON($('option:selected', '#stone').attr('rel'));
+            var stone = $.parseJSON($('option:selected', $('#stone')).attr('rel'));
             $('#name').html(item.name);
+            $('#atkimpact').html(item.atkimpact);
             if (item.implvlimpact & " . EQ_ATK . "){
               $('#atkimpact').html(parseInt(item.atkimpact) + parseInt(stone.implvlinc));
             } else {
@@ -359,6 +429,8 @@ function eq_run()
             } else {
               $('#timpact').html(item.timpact);
             }
+            $('#impchance').html(stone.impchance);
+            $('#burnchance').html(stone.burnchance);
           });
 
           $('#stone').change(function(){
@@ -367,27 +439,27 @@ function eq_run()
             if (item.implvlimpact & " . EQ_ATK . "){
               $('#atkimpact').html(parseInt(item.atkimpact) + parseInt(stone.implvlinc));
             } else {
-              $('#atkimpact').html(parseInt(item.atkimpact));
+              $('#atkimpact').html(item.atkimpact);
             }
             if (item.implvlimpact & " . EQ_DEF . "){
               $('#defimpact').html(parseInt(item.defimpact) + parseInt(stone.implvlinc));
             } else {
-              $('#defimpact').html(parseInt(item.defimpact));
+              $('#defimpact').html(item.defimpact);
             }
             if (item.implvlimpact & " . EQ_HP . "){
               $('#hpimpact').html(parseInt(item.hpimpact) + parseInt(stone.implvlinc));
             } else {
-              $('#hpimpact').html(parseInt(item.hpimpact));
+              $('#hpimpact').html(item.hpimpact);
             }
             if (item.implvlimpact & " . EQ_FF . "){
               $('#ffimpact').html(parseInt(item.ffimpact) + parseInt(stone.implvlinc));
             } else {
-              $('#ffimpact').html(parseInt(item.ffimpact));
+              $('#ffimpact').html(item.ffimpact);
             }
             if (item.implvlimpact & " . EQ_T . "){
               $('#timpact').html(parseInt(item.timpact) + parseInt(stone.implvlinc));
             } else {
-              $('#timpact').html(parseInt(item.timpact));
+              $('#timpact').html(item.timpact);
             }
             $('#impchance').html(stone.impchance);
             $('#burnchance').html(stone.burnchance);
