@@ -196,14 +196,111 @@ function eq_run()
   page_header("Kowal");
 
   if ($op == "enter"){
+    /* {{{ */
     commentdisplay("`n`EWchodzisz do kowala a kowal tez baba`n", "EQ", "EQ", 25, "EQ");
     addnav("Sklep", "$here&op=shop");
     addnav("Kowal ulepszacz", "$here&op=imp");
+    /* }}} */
   }
   else if ($op == "shop"){
+    /* {{{ */
+    $sql = "SELECT * FROM " . db_prefix("eqitems") . " WHERE inshop = 1";
+    $res = db_query($sql);
+    $i = 0;
+    output("`EKowal tudziez sprzedawca chwalacy sie jakie to oni maja itemki na sprzedaz.`n`n");
+    rawoutput("<table border='0' cellspacing='0' cellpadding='2' width='100%' align='center'>");
+    rawoutput("<tr class='trhead'><td>Akcja</td><td>Nazwa</td><td>Atak</td><td>Obrona</td><td>Max. HP</td><td>Lesne walki</td><td>Podroze</td><td style='font-weight: bold;'>Cena kupna</td><td>Cena sprzedazy</td></tr>");
+    while ($item = db_fetch_assoc($res)){
+      rawoutput("<tr class='".($i % 2 ? "trlight" : "trdark")."'>");
+      addnav("", "$here&op=buyitem&id=$item[id]");
+      rawoutput("<td>[<a href='$here&op=buyitem&id=$item[id]'>Kup</a>]</td>");
+      rawoutput("<td>$item[name]</td>");
+      rawoutput("<td>$item[atkimpact]</td>");
+      rawoutput("<td>$item[defimpact]</td>");
+      rawoutput("<td>$item[hpimpact]</td>");
+      rawoutput("<td>$item[ffimpact]</td>");
+      rawoutput("<td>$item[timpact]</td>");
+      rawoutput("<td style='font-weight: bold;'>$item[buyprice]</td>");
+      rawoutput("<td>$item[sellprice]</td>");
+      rawoutput("</tr>");
+      $i++;
+    }
+    rawoutput("</table>");
+    output("`n`n`EPonadto, kowal oferuje opcje kupna przedmiotu od Ciebie`n`n");
+    rawoutput("<table border='0' cellspacing='0' cellpadding='2' width='100%' align='center'>");
+    rawoutput("<tr class='trhead'><td>Akcja</td><td>Nazwa</td><td>Atak</td><td>Obrona</td><td>Max. HP</td><td>Lesne walki</td><td>Podroze</td><td>Cena kupna</td><td style='font-weight: bold;'>Cena sprzedazy</td></tr>");
+    $sql = "SELECT * FROM " . db_prefix("accounts_eqitems") . " AS a INNER JOIN " . db_prefix("eqitems") . " AS e ON (a.itemid = e.id) WHERE a.acctid = " . $session['user']['acctid'];
+    $res = db_query($sql);
+    $i = 0;
+    while ($item = db_fetch_assoc($res)){
+      rawoutput("<tr class='".($i % 2 ? "trlight" : "trdark")."'>");
+      addnav("", "$here&op=sellitem&id=$item[id]");
+      rawoutput("<td>[<a href='$here&op=sellitem&id=$item[id]'>Sprzedaj</a>]</td>");
+      rawoutput("<td>$item[name]</td>");
+      rawoutput("<td>$item[atkimpact]</td>");
+      rawoutput("<td>$item[defimpact]</td>");
+      rawoutput("<td>$item[hpimpact]</td>");
+      rawoutput("<td>$item[ffimpact]</td>");
+      rawoutput("<td>$item[timpact]</td>");
+      rawoutput("<td>$item[buyprice]</td>");
+      rawoutput("<td style='font-weight: bold;'>$item[sellprice]</td>");
+      rawoutput("</tr>");
+      $i++;
+    }
+    rawoutput("</table>");
     addnav("Powrot", "$here&op=enter");
+    /* }}} */
+  }
+  else if ($op == "buyitem"){
+    /* {{{ */
+    $id = httpget('id');
+    $sql = "SELECT buyprice FROM " . db_prefix("eqitems") . " WHERE id = '$id' LIMIT 1";
+    $res = db_query($sql);
+    /* na wszelki wypadek */
+    if (db_affected_rows() == 0){
+      output("`c`b`4Nie znaleziono przedmiotu o podanym ID!`b`c");
+    } else {
+      $item = db_fetch_assoc($res);
+      if ($session['user']['gold'] < $item['buyprice'] && (!($session['user']['superuser'] & SU_MEGAUSER))){
+        output("`EKowal smieje sie: '`GNie stac Cie!`E'");
+        addnav("Powrot do sklepu", "$here&op=shop");
+      } else {
+        db_query("INSERT INTO " . db_prefix("accounts_eqitems") . "(acctid, itemid, implvl) VALUES('" . $session['user']['acctid'] . "', '" . $id . "', 0)");
+        /* MEGAUSER nie traci piniążków */
+        if (!($session['user']['superuser'] & SU_MEGAUSER))
+          $session['user']['gold'] -= $item['buyprice'];
+        output("`EKowal gratuluje Ci zakupu!");
+        addnav("Powrot do sklepu", "$here&op=shop");
+      }
+    }
+    addnav("Powrot", "$here&op=enter");
+    /* }}} */
+  }
+  else if ($op == "sellitem"){
+    /* {{{ */
+    $id = httpget('id');
+    /* dla pewności */
+    $sql = "SELECT a.*, e.sellprice FROM " . db_prefix("accounts_eqitems") . " AS a INNER JOIN " . db_prefix("eqitems") . " AS e ON (a.itemid = e.id) WHERE itemid = '$id' AND acctid = '" . $session['user']['acctid'] . "'";
+    $res = db_query($sql);
+    if (db_affected_rows() == 0){
+      output("`c`b`4Nie znaleziono przedmiotu o podanym ID!`b`c");
+    } else {
+      $item = db_fetch_assoc($res);
+      /* usuwamy powiązanie itemka z userem */
+      db_query("DELETE FROM " . db_prefix("accounts_eqitems") . " WHERE itemid = '$id' AND acctid = '" . $session['user']['acctid'] . "' LIMIT 1");
+      /* usuwamy też i z ogólnej bazy itemków, jeśli item był ulepszany */
+      if ($item['implvl'] > 0){
+        db_query("DELETE FROM " . db_prefix("eqitems") . " WHERE id = '$id'");
+      }
+      $session['user']['gold'] += $item['sellprice'];
+      output("`EKowal gratuluje Ci sprzedazy!");
+      addnav("Powrot do sklepu", "$here&op=shop");
+    }
+    addnav("Powrot", "$here&op=enter");
+    /* }}} */
   }
   else if ($op == "doimp"){
+    /* {{{ */
     $sql = "SELECT * FROM " . db_prefix("eqstones") . " WHERE id = '" . $_POST['stone'] . "' LIMIT 1";
     $res = db_query($sql);
     $stone = db_fetch_assoc($res);
@@ -250,7 +347,7 @@ function eq_run()
               db_query("DELETE FROM " . db_prefix("eqitems") . " WHERE id = '" . $item['id'] . "'");
             }
             /* zapisujemy nowy itemek w bazie */
-            db_query("INSERT INTO " . db_prefix("eqitems") . "(name,cat,atkimpact,defimpact,hpimpact,ffimpact,timpact,inshop,buyprice,sellprice,droppable,dropchance,dropmindk,dropminrep,droprace,dropprof,implvlimpact) values('$newname','$item[cat]','$newatkimpact','$newdefimpact','$newhpimpact','$newffimpact','$newtimpact','$item[inshop]','$item[buyprice]','$item[sellprice]','0','0','0','0','0','0','$item[implvlimpact]')");
+            db_query("INSERT INTO " . db_prefix("eqitems") . "(name,cat,atkimpact,defimpact,hpimpact,ffimpact,timpact,inshop,buyprice,sellprice,droppable,dropchance,dropmindk,dropminrep,droprace,dropprof,implvlimpact) values('$newname','$item[cat]','$newatkimpact','$newdefimpact','$newhpimpact','$newffimpact','$newtimpact',0,'$item[buyprice]','$item[sellprice]',0,0,0,0,0,0,'$item[implvlimpact]')");
             /* db_insert_id() robi.. o to: Get the ID generated in the last query */
             db_query("INSERT INTO " . db_prefix("accounts_eqitems") . "(acctid, itemid, implvl) values('".$session['user']['acctid']."', '" . db_insert_id() . "', '" . ($item['implvl'] + 1) . "')");
             /* teraz jeszcze trzeba usunac ten poprzedni itemek */
@@ -292,8 +389,10 @@ function eq_run()
         }
       }
     }
+    /* }}} */
   }
   else if ($op == "imp"){
+    /* {{{ */
     $sql = "SELECT * FROM " . db_prefix("accounts_eqitems") . " AS a INNER JOIN " . db_prefix("eqitems") . " AS e ON (a.itemid = e.id) WHERE a.acctid = '" . $session['user']['acctid'] . "'";
     $res = db_query($sql);
 
@@ -469,6 +568,7 @@ function eq_run()
     );
 
     addnav("Powrot", "$here&op=enter");
+    /* }}} */
   }
 
   villagenav();
