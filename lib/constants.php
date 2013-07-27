@@ -83,11 +83,21 @@ myDefine("MODULE_ACTIVE",32);
 myDefine("MODULE_INJECTED",64);
 
 // Ciuf {
-myDefine("EQ_ATK", 1);
-myDefine("EQ_DEF", 2);
-myDefine("EQ_HP",  4);
-myDefine("EQ_FF",  8);
-myDefine("EQ_T",  16);
+myDefine("EQ_ATK",       1 << 0);
+myDefine("EQ_DEF",       1 << 1);
+myDefine("EQ_HP",        1 << 2);
+myDefine("EQ_FF",        1 << 3);
+myDefine("EQ_T",         1 << 4);
+
+myDefine("EQ_HEAD",      1 << 0);
+myDefine("EQ_SHOULDERS", 1 << 1);
+myDefine("EQ_BRACELET",  1 << 2);
+myDefine("EQ_ARMOR",     1 << 3);
+myDefine("EQ_RING",      1 << 4);
+myDefine("EQ_WEAPON",    1 << 5);
+myDefine("EQ_BELT",      1 << 6);
+myDefine("EQ_PANTS",     1 << 7);
+myDefine("EQ_SHOES",     1 << 8);
 // Ciuf }
 
 ?>

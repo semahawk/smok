@@ -20,7 +20,7 @@ $id = httpget('id');
 $editarray = array(
 	"Ekwipunek,title",
   "name" => "Nazwa itemku,text|",
-  "cat" => "Kategoria,enum,1,Head,2,Shoulders,3,Bracelet,4,Armor,5,Ring,6,Weapon,7,Belt,8,Pants,9,Shoes",
+  "cat" => "Kategoria,enum,".EQ_HEAD.",Head,".EQ_SHOULDERS.",Shoulders,".EQ_BRACELET.",Bracelet,".EQ_ARMOR.",Armor,".EQ_RING.",Ring,".EQ_WEAPON.",Weapon,".EQ_BELT.",Belt,".EQ_PANTS.",Pants,".EQ_SHOES.",Shoes",
   "atkimpact" => "Wplyw na atak,int|",
   "defimpact" => "Wplyw na obrone,int|",
   "hpimpact" => "Wplyw na max. HP,int|",
