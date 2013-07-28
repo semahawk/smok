@@ -36,12 +36,13 @@ if ($op == "equip"){
 } else {
   popup_header("Ekwipunek");
 
-  rawoutput("<table>" .
+  rawoutput("<center><table>" .
               "<tr>" .
-                "<td><a href='eqshow.php?op=showitems'>Ekwipunek</a></td>" .
-                "<td><a href='eqshow.php?op=showstones'>Kamienie</a></td>" .
+                "<td style='font-size: 20px;'><a href='eqshow.php?op=showitems'>Ekwipunek</a></td>" .
+                "<td>&nbsp;&nbsp;&middot;&nbsp;&nbsp;</td>" .
+                "<td style='font-size: 20px;'><a href='eqshow.php?op=showstones'>Kamienie</a></td>" .
               "</tr>" .
-            "</table>");
+            "</table></center><br/><br/>");
 
   if ($op == "" || $op == "showitems"){
     /* {{{ */
@@ -111,13 +112,31 @@ if ($op == "equip"){
     /* {{{ */
     $sql = "SELECT * FROM " . db_prefix("accounts_eqstones") . " AS a INNER JOIN " . db_prefix("eqstones") . " AS e ON (a.stoneid = e.id) WHERE a.acctid = '" . $session['user']['acctid'] . "'";
     $res = db_query($sql);
-    rawoutput("<table>");
-    while ($row = db_fetch_assoc($res)){
-      rawoutput("<tr>");
-      rawoutput("<td>$row[name]</td>");
+    rawoutput("<center><img src='images/uscroll.GIF'></center>");
+    rawoutput("<table border='0' cellspacing='0' cellpadding='2' width='100%' align='center'>");
+    rawoutput("<tr class='trhead'><td>Nazwa</td><td>O ile ulepsza</td><td>Max. poziom ulepszenia</td><td>Szansa na ulepszenie</td><td>Szansa na spalenie</td><td>Cena (jesli wystawione w handlu)</td></tr>");
+    $i = 0;
+    while ($stone = db_fetch_assoc($res)){
+      rawoutput("<tr class='".($i % 2 ? "trdark" : "trlight")."'>");
+      if ($stone['onsale'] === "1"){
+        rawoutput("<td style='color: #888;'><i>$stone[name]</i></td>");
+      } else {
+        rawoutput("<td>$stone[name]</td>");
+      }
+      rawoutput("<td>$stone[implvlinc]</td>");
+      rawoutput("<td>$stone[maximplvl]</td>");
+      rawoutput("<td>$stone[impchance]</td>");
+      rawoutput("<td>$stone[burnchance]</td>");
+      if ($stone['onsale'] === "1"){
+        rawoutput("<td>$stone[price]</td>");
+      } else {
+        rawoutput("<td>-</td>");
+      }
       rawoutput("</tr>");
+      $i++;
     }
     rawoutput("</table>");
+    rawoutput("<center><img src='images/lscroll.GIF'></center>");
     /* }}} */
   }
 

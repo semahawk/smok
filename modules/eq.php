@@ -93,6 +93,7 @@ function eq_install()
       "id integer primary key auto_increment," .
       "acctid int(11) not null," .
       "itemid integer not null," .
+      // Was causing problems..
       //"foreign key(acctid) references " . db_prefix("accounts") . "(acctid)," .
       //"foreign key(itemid) references " . db_prefix("eqitems") . "(id)," .
       /* poziom ulepszenia */
@@ -104,7 +105,10 @@ function eq_install()
     "CREATE TABLE IF NOT EXISTS " . db_prefix("accounts_eqstones") . " (" .
       "id integer primary key auto_increment," .
       "acctid int(11) not null," .
-      "stoneid integer not null" .
+      "stoneid integer not null," .
+      "onsale bool not null," .
+      "price int(11) not null" .
+      // Was causing problems..
       //"foreign key(acctid) references " . db_prefix("accounts") . "(acctid)," .
       //"foreign key(stoneid) references " . db_prefix("eqstones") . "(id)" .
     ");";
@@ -253,6 +257,7 @@ function eq_run()
       commentdisplay("`n`EWchodzisz do kowala a kowal tez baba`n", "EQ", "EQ", 25, "EQ");
       addnav("Sklep", "$here&op=shop");
       addnav("Kowal ulepszacz", "$here&op=imp");
+      addnav("Handel kamieniami", "$here&op=stonetrade");
       /* }}} */
     }
     else if ($op == "shop"){
@@ -349,6 +354,59 @@ function eq_run()
         output("`EKowal gratuluje Ci sprzedazy!");
         addnav("Powrot do sklepu", "$here&op=shop");
       }
+      addnav("Powrot", "$here&op=enter");
+      /* }}} */
+    }
+    else if ($op == "stonetrade"){
+      /* {{{ */
+      $sql = "SELECT a.*, e.*, u.name as username FROM " . db_prefix("accounts_eqstones") . " AS a INNER JOIN " . db_prefix("eqstones") . " AS e ON (a.stoneid = e.id) INNER JOIN " . db_prefix("accounts") . " AS u ON (a.acctid = u.acctid) WHERE onsale = 1";
+      $res = db_query($sql);
+      $i = 0;
+      output("`ELista kamieni wystawionych przez innych uzytkownikow`n`n");
+      rawoutput("<table border='0' cellspacing='0' cellpadding='2' width='100%' align='center'>");
+      rawoutput("<tr class='trhead'><td>Akcja</td><td>Sprzedawca</td><td>Nazwa</td><td>O ile ulepsza</td><td>Max. poziom ulepszenia</td><td>Szansa na ulepszenie</td><td>Szansa na spalenie</td><td style='font-weight: bold;'>Cena</td></tr>");
+      while ($stone = db_fetch_assoc($res)){
+        rawoutput("<tr class='".($i % 2 ? "trlight" : "trdark")."'>");
+        if ($stone['acctid'] === $session['user']['acctid']){
+          rawoutput("<td>-</td>");
+        } else {
+          addnav("", "$here&op=buystone&id=$stone[id]");
+          rawoutput("<td>[<a href='$here&op=buystone&id=$stone[id]'>Kup</a>]</td>");
+        }
+        rawoutput("<td>");
+        output("$stone[username]");
+        rawoutput("</td>");
+        rawoutput("<td>$stone[name]</td>");
+        rawoutput("<td>$stone[implvlinc]</td>");
+        rawoutput("<td>$stone[maximplvl]</td>");
+        rawoutput("<td>$stone[impchance]</td>");
+        rawoutput("<td>$stone[burnchance]</td>");
+        rawoutput("<td style='font-weight: bold;'>$stone[price]</td>");
+        rawoutput("</tr>");
+        $i++;
+      }
+      rawoutput("</table>");
+      addnav("Odswiez", "$here&op=stonetrade");
+      addnav("Powrot", "$here&op=enter");
+      /* }}} */
+    }
+    else if ($op == "buystone"){
+      /* {{{ */
+      $id = httpget('id');
+
+      $stone = db_fetch_assoc(db_query("SELECT * FROM " . db_prefix("accounts_eqstones") . " WHERE stoneid = '$id' AND acctid = '" . $session['user']['acctid'] . "' AND onsale = 1 LIMIT 1"));
+      if (db_affected_rows() == 0){
+        output("Error :C");
+      } else {
+        db_query("UPDATE " . db_prefix("accounts_eqstones") . " SET acctid = '" . $session['user']['acctid'] . "', onsale = 0, price = 0 WHERE stoneid = '$id' LIMIT 1");
+        if ($session['user']['gold'] < $stone['price']){
+          output("`ENie stac cie!");
+        } else {
+          output("Brawo, kupiles kamienia");
+          $session['user']['gold'] -= $stone['price'];
+        }
+      }
+      addnav("Powrot do handlu kamieniami", "$here&op=stonetrade");
       addnav("Powrot", "$here&op=enter");
       /* }}} */
     }
@@ -475,7 +533,7 @@ function eq_run()
       rawoutput("</select><br><br><br>");
 
       /* diiiiiiiiiiiiiiiirty */
-      $sql = "SELECT * FROM " . db_prefix("accounts_eqstones") . " AS a INNER JOIN " . db_prefix("eqstones") . " AS e ON (a.stoneid = e.id) WHERE a.acctid = '" . $session['user']['acctid'] . "'";
+      $sql = "SELECT * FROM " . db_prefix("accounts_eqstones") . " AS a INNER JOIN " . db_prefix("eqstones") . " AS e ON (a.stoneid = e.id) WHERE a.acctid = '" . $session['user']['acctid'] . "' AND onsale = 0";
       $res = db_query($sql);
       rawoutput("<select id='allstones' style='display: none;'>");
       while ($row = db_fetch_assoc($res)){
