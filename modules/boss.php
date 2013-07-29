@@ -9,7 +9,6 @@ require_once("common.php");
 require_once("lib/titles.php");
 require_once("lib/fightnav.php");
 require_once("lib/villagenav.php");
-require_once("lib/titles.php");
 require_once("lib/http.php");
 require_once("lib/buffs.php");
 require_once("lib/taunt.php");
@@ -322,7 +321,7 @@ function boss_run()
       }
       //$session['user']['gold'] = getsetting("newplayerstartgold", 50);
 
-      $newtitle = get_dk_title($session['user']['dragonkills'], $session['user']['sex']);
+      //$newtitle = get_dk_title($session['user']['dragonkills'], $session['user']['sex']);
 
       //$restartgold = $session['user']['gold'] +
         //getsetting("newplayerstartgold", 50) * $session['user']['dragonkills'];
@@ -355,9 +354,9 @@ function boss_run()
       }
 
       // Set the new title.
-      $newname = change_player_title($newtitle);
-      $session['user']['title'] = $newtitle;
-      $session['user']['name'] = $newname;
+      //$newname = change_player_title($newtitle);
+      $session['user']['title'] = "";
+      //$session['user']['name'] = $newname;
 
       reset($session['user']['dragonpoints']);
       while (list($key,$val) = each($session['user']['dragonpoints'])){
@@ -377,8 +376,8 @@ function boss_run()
       modulehook("dragonkilltext");
 
       $regname = get_player_basename();
-      addnews("`#%s`# has earned the title `&%s`# for having slain the %s!",$regname,$session['user']['title'], get_module_pref('bossname'));
-      output("`n`n`^You are now known as `&%s`^!!", $session['user']['name']);
+      addnews("`#%s`# has earned `&%d`# reputation points for having slain the %s!",$regname,get_module_setting('rep_for_boss_kill', 'rep') * $session['user']['dragonkills'], get_module_pref('bossname'));
+      //output("`n`n`^You are now known as `&%s`^!!", $session['user']['name']);
       output("`n`n`&Because you have slain the %s, you start with some extras.  You also keep additional permanent hitpoints you've earned.`n", get_module_pref('bossname'));
       $session['user']['charm'] += 5;
       output("`^You gain FIVE charm points for having defeated the boss!`n");
@@ -390,7 +389,7 @@ function boss_run()
       /* user must find a new pokeball after beating a boss */
       set_module_pref("has_the_pokeball", 0);
       /* give him the reputation */
-      set_module_pref('rep', get_module_pref('rep', 'rep') + get_module_setting('rep_for_boss_kill', 'rep'), 'rep');
+      set_module_pref('rep', get_module_pref('rep', 'rep') + get_module_setting('rep_for_boss_kill', 'rep') * $session['user']['dragonkills'], 'rep');
       /* set the new boss */
       boss_newboss();
       break;
