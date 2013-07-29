@@ -472,7 +472,7 @@ function eq_run()
        * historycznych i sentymentalnych, zostawiam to, nie zaszkodzi :3
        */
 
-      $stone = db_fetch_assoc(db_query("SELECT a.*, u.gold as usergold, u.name as username FROM " . db_prefix("accounts_eqstones") . " AS a INNER JOIN " . db_prefix("accounts") . " AS u ON (a.acctid = u.acctid) WHERE id = '$id' AND onsale = 1 LIMIT 1"));
+      $stone = db_fetch_assoc(db_query("SELECT a.*, s.name, u.gold as usergold, u.name as username FROM " . db_prefix("accounts_eqstones") . " AS a INNER JOIN " . db_prefix("accounts") . " AS u ON (a.acctid = u.acctid) INNER JOIN " . db_prefix("eqstones") . " AS s ON (a.stoneid = s.id) WHERE a.id = '$id' AND a.onsale = 1 LIMIT 1"));
       if (db_affected_rows() == 0){
         output("`EError :C");
       } else {
@@ -483,7 +483,7 @@ function eq_run()
           if ($session['user']['gold'] < $stone['price']){
             output("`ENie stac cie!");
           } else {
-            systemmail($stone['acctid'], "Kupiec na kamien!", "$stone[username]`E kupil Twoj $stone[name]`E za $stone[price]`E!");
+            systemmail($stone['acctid'], "`G$stone[name]`E sprzedany!", $session['user']['name']. " `E kupil Twoj `G$stone[name]`E za $stone[price]`E!");
             db_query("UPDATE " . db_prefix("accounts") . " SET gold = '" . (int)((int)$stone['usergold'] + (int)$stone['price']) . "' WHERE acctid = '" . $stone['acctid'] . "' LIMIT 1");
             db_query("UPDATE " . db_prefix("accounts_eqstones") . " SET acctid = '" . $session['user']['acctid'] . "', onsale = 0, price = 0 WHERE id = '$id' LIMIT 1");
             output("`EBrawo, kupiles kamienia");
