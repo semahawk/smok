@@ -21,7 +21,7 @@ function titles_getmoduleinfo()
     ),
     "prefs" => array (
       "Tytuly,title",
-      "titles" => "Zdobyte przez uzytkownika tytuly (oddzielone ':'),text|",
+      "titles" => "Tytuly zdobyte przez uzytkownika (w formacie: NAZWA ':' POWOD oddzielone ';' (srednikiem)),text|",
     )
   );
 
@@ -47,19 +47,24 @@ function titles_dohook($hookname, $args)
   switch ($hookname){
     case "bioinfo":
       if (get_module_pref('titles', 'titles', $args['acctid']) !== ""){
-        $titles = explode(':', get_module_pref('titles', 'titles', $args['acctid']));
-        if (!empty($titles)){
-          output("`^Tytuly: ");
-          $i = 0;
-          foreach ($titles as $title){
-            $i++;
-            if ($i < count($titles))
-              output("$title`0, ");
-            else
-              output("$title");
+        $pairs = explode(';', get_module_pref('titles', 'titles', $args['acctid']));
+        output("`^Tytuly: `0");
+        $i = 0;
+        foreach ($pairs as $pair){
+          $title = explode(':', $pair)[0];
+          $reason = explode(':', $pair)[1];
+          $i++;
+          if ($i < count($pairs)){
+            rawoutput("<a title='$reason'>");
+            output("$title`0, ");
+            rawoutput("</a>");
+          } else {
+            rawoutput("<a title='$reason'>");
+            output("$title");
+            rawoutput("</a>");
           }
-          output("`n");
         }
+        output("`n");
       }
       break;
   }
@@ -86,11 +91,12 @@ function titles_run()
     if (get_module_pref('titles') === ""){
       output("`ENiestety, nie masz zadnych tytulow!");
     } else {
-      output("`EDostepne tytuly:`n`n`n`n");
+      output("`EDostepne tytuly:`0`n`n`n`n");
       $justname = str_replace($session['user']['ctitle'], "", $session['user']['name']);
-      $titles = explode(':', get_module_pref('titles'));
-      foreach ($titles as $title){
-        output($title . " " . $justname);
+      $pairs = explode(';', get_module_pref('titles'));
+      foreach ($pairs as $pair){
+        $title = explode(':', $pair)[0];
+        output("`0" . $title . "`0 " . $justname);
         $encoded = base64_encode($title);
         addnav("", "$here&op=set&title=$encoded");
         rawoutput("<a href='$here&op=set&title=$encoded' class='button'>Ustaw</a><br><br>");
@@ -102,14 +108,15 @@ function titles_run()
   else if ($op == "set"){
     /* {{{ */
     $title = httpget('title');
-    $title = base64_decode($title);
+    $title = base64_decode($title) . "`&";
 
     $justname = str_replace($session['user']['ctitle'], "", $session['user']['name']);
 
     db_query("UPDATE " . db_prefix("accounts") . " SET ctitle = '$title' WHERE acctid = '" . $session['user']['acctid'] . "' LIMIT 1");
-    $session['user']['name'] = $title . " " . $justname;
+    $session['user']['name'] = $title . $justname;
     $session['user']['ctitle'] = $title;
     output("`@Tytul zmieniony na '$title`@'!");
+    addnav("Zmien tytul", "$here");
     /* }}} */
   }
 

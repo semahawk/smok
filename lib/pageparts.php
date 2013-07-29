@@ -628,7 +628,7 @@ function charstats(){
         $name_prefix = "[<a href='runmodule.php?module=titles'>Ustaw tytul</a>] ";
       } else {
         addnav("", "runmodule.php?module=titles");
-        $name_prefix = "[<a href='runmodule.php?module=titles'>Zmien</a>] ";
+        $name_prefix = "[<a href='runmodule.php?module=titles'>Zmien tytul</a>] ";
       }
     }
     /* Ciuf } */
