@@ -417,21 +417,37 @@ function eq_run()
       rawoutput("</table>");
       rawoutput("<center><img src='images/lscroll.GIF'></center>");
 
+      /* zanim pokażemy itemki do wystawienia, musimy sprawdzić czy aby nie
+       * osiągnął limitu */
+      $limit_exceeded = 0;
+      $s = db_fetch_assoc(db_query("SELECT count(*) as sum FROM " . db_prefix("accounts_eqstones") . " WHERE acctid = '" . $session['user']['acctid'] . "' AND onsale = 1"));
+      /* TODO: jak będzie ten status donatora, to tutaj trza będzie pomiąchać */
+      if ($s['sum'] >= 5){
+        $limit_exceeded = 1;
+      }
+
       /* tutaj, itemki do wystawienia */
       $sql = "SELECT * FROM " . db_prefix("accounts_eqstones") . " AS a INNER JOIN " . db_prefix("eqstones") . " AS e ON (a.stoneid = e.id) WHERE acctid = '" . $session['user']['acctid'] . "' AND onsale = 0";
       $res = db_query($sql);
       $i = 0;
       output("`n`n`n`ELista kamieni do wystawienia`n`n");
+      if ($limit_exceeded){
+        output("`4Niestety, wyczerpales swoj limit wystawionych kamieni`n`n");
+      }
       rawoutput("<center><img src='images/uscroll.GIF'></center>");
       rawoutput("<table border='0' cellspacing='0' cellpadding='2' width='100%' align='center'>");
       rawoutput("<tr class='trhead'><td>Akcja</td><td>&nbsp;</td><td>Nazwa</td><td>O ile ulepsza</td><td>Max. poziom ulepszenia</td><td>Szansa na ulepszenie</td><td>Szansa na spalenie</td></tr>");
       while ($stone = db_fetch_assoc($res)){
         rawoutput("<tr class='".($i % 2 ? "trlight" : "trdark")."'>");
-        addnav("", "$here&op=setstoneonsale&id=$stone[id]");
-        rawoutput("<form method='post' action='$here&op=setstoneonsale&id=$stone[id]'>");
-        rawoutput("<td><input type='submit' name='submit' value='Wystaw'></td>");
-        rawoutput("<td><input type='text' name='price' placeholder='Cena'></td>");
-        rawoutput("</form>");
+        if ($limit_exceeded){
+          rawoutput("<td style='text-align: center;'>-</td><td>&nbsp;</td>");
+        } else {
+          addnav("", "$here&op=setstoneonsale&id=$stone[id]");
+          rawoutput("<form method='post' action='$here&op=setstoneonsale&id=$stone[id]'>");
+          rawoutput("<td><input type='submit' name='submit' value='Wystaw'></td>");
+          rawoutput("<td><input type='text' name='price' placeholder='Cena'></td>");
+          rawoutput("</form>");
+        }
         rawoutput("<td>$stone[name]</td>");
         rawoutput("<td>$stone[implvlinc]</td>");
         rawoutput("<td>$stone[maximplvl]</td>");
@@ -483,6 +499,10 @@ function eq_run()
       /* {{{ */
       $id = httpget('id');
       $price = httppost('price');
+
+      /* Nie wiem czy faktycznie jest taka potrzeba, ale możnaby było tutaj
+       * wstawić jakieś zabezpieczenie, które sprawdza, czy nie został
+       * przypadkiem przekroczony limit wystawionych kamieni */
 
       db_query("UPDATE " . db_prefix("accounts_eqstones") . " SET onsale = 1, price = '$price' WHERE stoneid = '$id' AND acctid = '" . $session['user']['acctid'] . "' AND onsale = 0 LIMIT 1");
 
