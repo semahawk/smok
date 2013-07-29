@@ -8,6 +8,7 @@
 require_once("common.php");
 require_once("lib/villagenav.php");
 require_once("lib/commentary.php");
+require_once("lib/systemmail.php");
 
 function eq_getmoduleinfo()
 {
@@ -363,21 +364,43 @@ function eq_run()
     }
     else if ($op == "stonetrade"){
       /* {{{ */
+      $sortby = httpget('sortby');
+      if ($sortby == ""){
+        $sortby = "price";
+      }
       /* tutaj, itemki do kupienia */
-      $sql = "SELECT a.*, e.*, u.name as username FROM " . db_prefix("accounts_eqstones") . " AS a INNER JOIN " . db_prefix("eqstones") . " AS e ON (a.stoneid = e.id) INNER JOIN " . db_prefix("accounts") . " AS u ON (a.acctid = u.acctid) WHERE onsale = 1";
+      /* -- 'acesid' => ACcounts_EqStones.ID */
+      $sql = "SELECT a.*, a.id as acesid, e.*, u.name as username FROM " . db_prefix("accounts_eqstones") . " AS a INNER JOIN " . db_prefix("eqstones") . " AS e ON (a.stoneid = e.id) INNER JOIN " . db_prefix("accounts") . " AS u ON (a.acctid = u.acctid) WHERE onsale = 1 ORDER BY $sortby";
       $res = db_query($sql);
       $i = 0;
       output("`ELista kamieni wystawionych przez innych uzytkownikow`n`n");
       rawoutput("<center><img src='images/uscroll.GIF'></center>");
       rawoutput("<table border='0' cellspacing='0' cellpadding='2' width='100%' align='center'>");
-      rawoutput("<tr class='trhead'><td>Akcja</td><td>Sprzedawca</td><td>Nazwa</td><td>O ile ulepsza</td><td>Max. poziom ulepszenia</td><td>Szansa na ulepszenie</td><td>Szansa na spalenie</td><td style='font-weight: bold;'>Cena</td></tr>");
+      addnav("", "$here&op=stonetrade&sortby=username");
+      addnav("", "$here&op=stonetrade&sortby=name");
+      addnav("", "$here&op=stonetrade&sortby=implvlinc");
+      addnav("", "$here&op=stonetrade&sortby=maximplvl");
+      addnav("", "$here&op=stonetrade&sortby=impchance");
+      addnav("", "$here&op=stonetrade&sortby=burnchance");
+      addnav("", "$here&op=stonetrade&sortby=price");
+      rawoutput("
+        <tr class='trhead'>
+          <td>Akcja</td>
+          <td><a href='$here&op=stonetrade&sortby=username'>Sprzedawca</a></td>
+          <td><a href='$here&op=stonetrade&sortby=name'>Nazwa</a></td>
+          <td><a href='$here&op=stonetrade&sortby=implvlinc'>O ile ulepsza</a></td>
+          <td><a href='$here&op=stonetrade&sortby=maximplvl'>Max. poziom ulepszenia</a></td>
+          <td><a href='$here&op=stonetrade&sortby=impchance'>Szansa na ulepszenie</a></td>
+          <td><a href='$here&op=stonetrade&sortby=burnchance'>Szansa na spalenie</a></td>
+          <td style='font-weight: bold;'><a href='$here&op=stonetrade&sortby=price'>Cena</a></td>
+        </tr>");
       while ($stone = db_fetch_assoc($res)){
         rawoutput("<tr class='".($i % 2 ? "trlight" : "trdark")."'>");
-        addnav("", "$here&op=buystone&id=$stone[id]");
+        addnav("", "$here&op=buystone&id=$stone[acesid]");
         if ($stone['acctid'] === $session['user']['acctid']){
-          rawoutput("<td><a href='$here&op=buystone&id=$stone[id]' class='button'>&nbsp;Anuluj&nbsp;</a></td>");
+          rawoutput("<td><a href='$here&op=buystone&id=$stone[acesid]' class='button'>&nbsp;Anuluj&nbsp;</a></td>");
         } else {
-          rawoutput("<td><a href='$here&op=buystone&id=$stone[id]' class='button'>&nbsp;Kup&nbsp;</a></td>");
+          rawoutput("<td><a href='$here&op=buystone&id=$stone[acesid]' class='button'>&nbsp;Kup&nbsp;</a></td>");
         }
         rawoutput("<td>");
         output("$stone[username]");
@@ -395,7 +418,7 @@ function eq_run()
       rawoutput("<center><img src='images/lscroll.GIF'></center>");
 
       /* tutaj, itemki do wystawienia */
-      $sql = "SELECT * FROM " . db_prefix("accounts_eqstones") . " AS a INNER JOIN " . db_prefix("eqstones") . " AS e ON (a.stoneid = e.id) WHERE onsale = 0";
+      $sql = "SELECT * FROM " . db_prefix("accounts_eqstones") . " AS a INNER JOIN " . db_prefix("eqstones") . " AS e ON (a.stoneid = e.id) WHERE acctid = '" . $session['user']['acctid'] . "' AND onsale = 0";
       $res = db_query($sql);
       $i = 0;
       output("`n`n`n`ELista kamieni do wystawienia`n`n");
@@ -428,18 +451,25 @@ function eq_run()
       /* {{{ */
       $id = httpget('id');
 
-      $stone = db_fetch_assoc(db_query("SELECT * FROM " . db_prefix("accounts_eqstones") . " WHERE stoneid = '$id' AND acctid = '" . $session['user']['acctid'] . "' AND onsale = 1 LIMIT 1"));
+      /* te wszystkie LIMIT 1 są tutaj zepewne niepotrzebne, bo $id to jest ten
+       * cały PRIMARY KEY, które będzie unikalne, jedno, blablabla, ale ze względów
+       * historycznych i sentymentalnych, zostawiam to, nie zaszkodzi :3
+       */
+
+      $stone = db_fetch_assoc(db_query("SELECT a.*, u.gold as usergold, u.name as username FROM " . db_prefix("accounts_eqstones") . " AS a INNER JOIN " . db_prefix("accounts") . " AS u ON (a.acctid = u.acctid) WHERE id = '$id' AND onsale = 1 LIMIT 1"));
       if (db_affected_rows() == 0){
         output("`EError :C");
       } else {
         if ($session['user']['acctid'] === $stone['acctid']){
-          db_query("UPDATE " . db_prefix("accounts_eqstones") . " SET onsale = 0, price = 0 WHERE stoneid = '$id' AND acctid = '" . $session['user']['acctid'] . "' AND onsale = 1 LIMIT 1");
+          db_query("UPDATE " . db_prefix("accounts_eqstones") . " SET onsale = 0, price = 0 WHERE id = '$id' AND onsale = 1 LIMIT 1");
           output("`EPomyslnie anulowales wystawienie kamienia");
         } else {
           if ($session['user']['gold'] < $stone['price']){
             output("`ENie stac cie!");
           } else {
-            db_query("UPDATE " . db_prefix("accounts_eqstones") . " SET acctid = '" . $session['user']['acctid'] . "', onsale = 0, price = 0 WHERE stoneid = '$id' LIMIT 1");
+            systemmail($stone['acctid'], "Kupiec na kamien!", "$stone[username]`E kupil Twoj $stone[name]`E za $stone[price]`E!");
+            db_query("UPDATE " . db_prefix("accounts") . " SET gold = '" . (int)((int)$stone['usergold'] + (int)$stone['price']) . "' WHERE acctid = '" . $stone['acctid'] . "' LIMIT 1");
+            db_query("UPDATE " . db_prefix("accounts_eqstones") . " SET acctid = '" . $session['user']['acctid'] . "', onsale = 0, price = 0 WHERE id = '$id' LIMIT 1");
             output("`EBrawo, kupiles kamienia");
             $session['user']['gold'] -= $stone['price'];
           }
