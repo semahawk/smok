@@ -620,8 +620,25 @@ function charstats(){
 			$def = round($def, 1);
 		}
 
+    /* Ciuf { */
+    $name_prefix = "";
+    if (get_module_pref('titles', 'titles', $u['acctid']) !== ""){
+      if ($u['ctitle'] === ""){
+        addnav("", "runmodule.php?module=titles");
+        $name_prefix = "[<a href='runmodule.php?module=titles'>Ustaw tytul</a>] ";
+      } else {
+        addnav("", "runmodule.php?module=titles");
+        $name_prefix = "[<a href='runmodule.php?module=titles'>Zmien</a>] ";
+      }
+    }
+    /* Ciuf } */
+
 		addcharstat("Vital Info");
+    /* Ciuf before {
 		addcharstat("Name", $u['name']);
+     } Ciuf after { */
+    addcharstat("Name", $name_prefix . $u['name']);
+    /* Ciuf end } */
 		addcharstat("Level", "`b".$u['level'].check_temp_stat("level",1)."`b");
 		if ($u['alive']) {
 			addcharstat("Hitpoints", $u['hitpoints'].check_temp_stat("hitpoints",1).
