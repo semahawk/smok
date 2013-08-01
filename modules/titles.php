@@ -51,8 +51,9 @@ function titles_dohook($hookname, $args)
         output("`^Tytuly: `0");
         $i = 0;
         foreach ($pairs as $pair){
-          $title = explode(':', $pair)[0];
-          $reason = explode(':', $pair)[1];
+          $exploded = explode(':', $pair);
+          $title = $exploded[0];
+          $reason = $exploded[1];
           $i++;
           if ($i < count($pairs)){
             rawoutput("<a title='$reason'>");
@@ -95,7 +96,8 @@ function titles_run()
       $justname = str_replace($session['user']['ctitle'], "", $session['user']['name']);
       $pairs = explode(';', get_module_pref('titles'));
       foreach ($pairs as $pair){
-        $title = explode(':', $pair)[0];
+        $exploded = explode(':', $pair);
+        $title = $exploded[0];
         output("`0" . $title . "`0 " . $justname);
         $encoded = base64_encode($title);
         addnav("", "$here&op=set&title=$encoded");
