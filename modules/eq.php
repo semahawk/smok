@@ -121,6 +121,7 @@ function eq_install()
   db_query($create_accounts_eqstones);
 
   module_addhook("charstats");
+  module_addhook("battle-victory");
   module_addhook("village");
 
   return true;
@@ -220,6 +221,37 @@ function eq_dohook($hookname, $args)
       break;
     case "village":
       addnav("Itemkowe Centrum", "runmodule.php?module=eq&op=enter");
+      break;
+    case "battle-victory":
+      $drop = e_rand(0, 100);
+      $sql = "SELECT * FROM (SELECT * FROM " . db_prefix("eqitems") . " WHERE droppable = 1 AND $drop <= dropchance) t1 ORDER BY RAND() LIMIT 1";
+      $res = db_query($sql);
+      $item = db_fetch_assoc($res);
+
+      /* <hem, hem, hem..> */
+      /*$sql = "SELECT * FROM " . db_prefix("eqitems") . " WHERE droppable = 1 AND dropchance >= $drop AND dropchance <= $item[dropchance] ORDER BY RAND() LIMIT 1";
+      $res = db_query($sql);
+      $item = db_fetch_assoc($res);*/
+      /* </hem, hem, hem..> */
+
+      if (!empty($item)){
+        /* set the defaults */
+        if ($item['droprace'] == "" || $item['droprace'] == 0)
+          $item['droprace'] = $session['user']['race'];
+        /* check the DKs */
+        if ($session['user']['dragonkills'] >= $item['dropmindk']){
+          /* check the rep */
+          if (get_module_pref('rep', 'rep', $session['user']['acctid']) >= $item['dropminrep']){
+            /* check the race */
+            if ($session['user']['race'] == $item['droprace']){
+              db_query("INSERT INTO " . db_prefix("accounts_eqitems") . "(acctid, itemid, implvl) VALUES('" . $session['user']['acctid'] . "', '" . $item['id'] . "', 0)");
+              if (db_affected_rows() == 1){
+                output("`EPrzeszukujesz cialo potwora i znajdujesz `G$item[name]`E! `e(`@$drop `e<= `@$item[dropchance]`e)`n");
+              }
+            }
+          }
+        }
+      }
       break;
   }
 
