@@ -223,7 +223,9 @@ function eq_dohook($hookname, $args)
       addnav("Itemkowe Centrum", "runmodule.php?module=eq&op=enter");
       break;
     case "battle-victory":
-      $drop = e_rand(0, 100);
+      $drop = e_rand(0, 99);
+      $dropafterpoint = e_rand(0, 100) / 100;
+      $drop = $drop + $dropafterpoint;
       $sql = "SELECT * FROM (SELECT * FROM " . db_prefix("eqitems") . " WHERE droppable = 1 AND $drop <= dropchance) t1 ORDER BY RAND() LIMIT 1";
       $res = db_query($sql);
       $item = db_fetch_assoc($res);
