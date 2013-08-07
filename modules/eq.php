@@ -660,7 +660,7 @@ function eq_run()
     }
     else if ($op == "imp"){
       /* {{{ */
-      $sql = "SELECT * FROM " . db_prefix("accounts_eqitems") . " AS a INNER JOIN " . db_prefix("eqitems") . " AS e ON (a.itemid = e.id) WHERE a.acctid = '" . $session['user']['acctid'] . "' AND a.equipped = 0";
+      $sql = "SELECT * FROM " . db_prefix("accounts_eqitems") . " AS a INNER JOIN " . db_prefix("eqitems") . " AS e ON (a.itemid = e.id) WHERE a.acctid = '" . $session['user']['acctid'] . "' AND a.equipped = 0 ORDER BY a.implvl";
       $res = db_query($sql);
 
       output("`EKowal mowi `GWybierz item:`E`n`n");
