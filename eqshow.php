@@ -15,7 +15,7 @@ if ($op == "equip"){
   $id = httpget('id');
 
   /* sprawdzamy w jakiej kategorii jest ony itemek */
-  $sql = "SELECT cat FROM " . db_prefix("eqitems") . " WHERE id = '$id' LIMIT 1";
+  $sql = "SELECT * FROM " . db_prefix("eqitems") . " WHERE id = '$id' LIMIT 1";
   $res = db_query($sql);
   $item = db_fetch_assoc($res);
 
@@ -24,10 +24,26 @@ if ($op == "equip"){
   $res = db_query($sql);
 
   if (db_affected_rows() == 0){
-    db_query("UPDATE " . db_prefix("accounts_eqitems") . " SET equipped = 1 WHERE acctid = '" . $session['user']['acctid'] . "' AND itemid = '$id'");
+    db_query("UPDATE " . db_prefix("accounts_eqitems") . " SET equipped = 1 WHERE acctid = '" . $session['user']['acctid'] . "' AND itemid = '$id' AND equipped = 0 LIMIT 1");
 
     if (db_affected_rows() == 0){
       echo "error! :C";
+    } else {
+      $session['user']['attack'] = $session['user']['attack'] + $item['atkimpact'];
+      $session['user']['defense'] = $session['user']['defense'] + $item['defimpact'];
+      $session['user']['maxhitpoints'] = $session['user']['maxhitpoints'] + $item['hpimpact'];
+
+      if ($item['cat'] == EQ_WEAPON){
+        $session['user']['weapondmg'] = $item['atkimpact'];
+        db_query("UPDATE " . db_prefix("accounts") . " SET weapon = '" . $item['name'] . "', attack = " . $session['user']['attack'] . ", defense = " . $session['user']['defense'] . ", weapondmg = " . $item['atkimpact'] . ", maxhitpoints = " . $session['user']['maxhitpoints'] . " WHERE acctid = " . $session['user']['acctid']);
+      } else {
+        $session['user']['armordef'] = $item['defimpact'];
+        db_query("UPDATE " . db_prefix("accounts") . " SET armor = '" . $item['name'] . "', attack = " . $session['user']['attack'] . ", defense = " . $session['user']['defense'] . ", armordef = " . $item['defimpact'] . ", maxhitpoints = " . $session['user']['maxhitpoints'] . " WHERE acctid = " . $session['user']['acctid']);
+      }
+
+      if (db_affected_rows() == 0){
+        echo "update error!";
+      }
     }
   } else {
     echo "Slot zajety!";

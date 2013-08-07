@@ -58,7 +58,7 @@ function eq_install()
       /* czy dropi w lesie? */
       "droppable bool not null," .
       /* jeśli dropi i są spełnione n/w warunki - jaka szansa na wydropienie */
-      "dropchance int(11) not null," .
+      "dropchance float not null," .
       /* jeśli dropi - min. liczba DK (czy też BK) */
       "dropmindk int(11) not null," .
       /* jeśli dropi - min. liczba repy */
@@ -82,7 +82,7 @@ function eq_install()
       /* max. poziom ulepszenia (tj. powyżej którego kamienia nie będzie można użyć) */
       "maximplvl int(11) not null," .
       /* szansa (w %) na wydropienie w lesie */
-      "dropchance int(3) not null," .
+      "dropchance float not null," .
       /* szansa (w %) na powodzenie ulepszenia */
       "impchance int(3) not null," .
       /* szansa (w %) na spalenie itemku przy ulepszaniu */
@@ -277,8 +277,23 @@ function eq_run()
   if ($op == "unequip"){
     /* {{{ */
     $id = httpget('id');
+    $item = db_fetch_assoc(db_query("SELECT * FROM " . db_prefix("eqitems") . " WHERE id = '$id' LIMIT 1"));
 
-    db_query("UPDATE " . db_prefix("accounts_eqitems") . " SET equipped = 0 WHERE acctid = '" . $session['user']['acctid'] . "' AND itemid = '$id'");
+    $session['user']['attack'] = $session['user']['attack'] - $item['atkimpact'];
+    $session['user']['defense'] = $session['user']['defense'] - $item['defimpact'];
+    $session['user']['maxhitpoints'] = $session['user']['maxhitpoints'] - $item['hpimpact'];
+
+    if ($item['cat'] == EQ_WEAPON){
+      $session['user']['weapon'] = "";
+      $session['user']['weapondmg'] = 0;
+      db_query("UPDATE " . db_prefix("accounts") . " SET weapon = '', attack = " . $session['user']['attack'] . ", weapondmg = 0, maxhitpoints = " . $session['user']['maxhitpoints'] . " WHERE acctid = " . $session['user']['acctid'] . " LIMIT 1");
+    } else {
+      $session['user']['armor'] = "";
+      $session['user']['armordef'] = 0;
+      db_query("UPDATE " . db_prefix("accounts") . " SET armor = '', defense = " . $session['user']['defense'] . ", armordef = 0, maxhitpoints = " . $session['user']['maxhitpoints'] . " WHERE acctid = " . $session['user']['acctid'] . " LIMIT 1");
+    }
+
+    db_query("UPDATE " . db_prefix("accounts_eqitems") . " SET equipped = 0 WHERE acctid = '" . $session['user']['acctid'] . "' AND itemid = '$id' AND equipped = 1 LIMIT 1");
 
     if (db_affected_rows() == 0){
       echo "error! :C";
