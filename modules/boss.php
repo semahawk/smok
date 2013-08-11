@@ -49,46 +49,6 @@ function boss_getmoduleinfo()
 
 function boss_install()
 {
-  /* dla pewności */
-  /* przy reinstallowaniu za każdym razem dodawał rekordów, których było w końcu
-   * po parę zestawów */
-  $sql_drop = "DROP TABLE IF EXISTS " . db_prefix("bosses");
-
-  $sql_create = "CREATE TABLE IF NOT EXISTS " . db_prefix("bosses") . "(\n" .
-                  "bossid int(11) primary key auto_increment,\n" .
-                  "bossname varchar(255) not null,\n" .
-                  "bossweapon varchar(255) not null,\n" .
-                  "bossdesc_before text not null,\n" .
-                  "bossdesc_after text not null,\n" .
-                  "bosslocation varchar(255) not null\n" .
-                ");\n";
-
-  db_query($sql_drop);
-  db_query($sql_create);
-
-  $bosses = array(
-    "[FIXME] Szkieletor" => array("[FIXME] Szkieletowate lapska",
-      "`EOpis przed zabiciem `GSZKIELETORA",
-      "`EOpis po zabiciu `GSZKIELETORA",
-      "Deus Nocturnem"),
-    "[FIXME] Ciemny Elf" => array("[FIXME] Ciemny luk",
-      "`EOpis przed zabiciem `GCIEMNEGO ELFA",
-      "`EOpis po zabiciu `GCIEMNEGO ELFA",
-      "Glorfindal"),
-    "[FIXME] Kraken" => array("[FIXME] Macki",
-      "`EOpis przed zabiciem `GKRAKENA",
-      "`EOpis po zabiciu `GKRAKENA",
-      "Nautileum")
-  );
-
-  /* TODO: to można by było wrzucić jako całość do jednego stringa i raz wykonać
-   *       ale czemuś, nie wiedzieć czemu, mam syntax errory */
-  $num = 0;
-  foreach ($bosses as $name => $more){
-    db_query("INSERT INTO `" . db_prefix("bosses") . "` (bossid, bossname, bossweapon, bossdesc_before, bossdesc_after, bosslocation) VALUES(NULL, '$name', '$more[0]', '$more[1]', '$more[2]', '$more[3]');\n");
-    $num++;
-  }
-
   module_addeventhook("forest", "return 0;");
   module_addhook("forest");
   module_addhook("charstats");
