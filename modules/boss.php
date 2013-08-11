@@ -365,7 +365,8 @@ function boss_run()
         addnav("Kontynuuj", "$here&op=prologue1&flawless=$flawless");
       } elseif ($defeat){
         output("Niestety, %s cie pokonal", get_module_pref("bossname"));
-        villagenav();
+        addnews("%s `\$zostal".($session['user']['sex'] ? "a" : "")." pokonan".($session['user']['sex'] ? "a" : "")." przez %s`\$!", $session['user']['name'], get_module_pref("bossname"));
+        addnav("Do `\$Krainy Cienia`0", "shades.php");
       } else {
         fightnav(true, false, "$here");
       }
