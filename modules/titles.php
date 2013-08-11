@@ -7,6 +7,7 @@
 
 require_once("common.php");
 require_once("lib/villagenav.php");
+require_once("lib/titles.php");
 
 function titles_getmoduleinfo()
 {
@@ -154,16 +155,7 @@ function titles_run()
       $reason = httppost('reason');
       $id = httppost('id');
 
-      $titles = unserialize(get_module_pref('titles', 'titles', $id));
-
-      if ($titles === false){
-        $titles = array();
-      }
-
-      $titles[$title] = $reason;
-
-      set_module_pref('titles', serialize($titles), 'titles', $id);
-
+      add_title($title, $reason, $id);
       output("Najprawdopodobniej sie udalo");
     } else {
       // TODO: smierc hakierowi tudziez email do adminow
@@ -176,14 +168,10 @@ function titles_run()
       $id = httpget('id');
       $title = base64_decode(httpget('t'));
 
-      $titles = unserialize(get_module_pref('titles', 'titles', $id));
-
-      if ($titles === false){
-        output("`yLOL");
-      } else {
-        unset($titles[$title]);
-        set_module_pref('titles', serialize($titles), 'titles', $id);
+      if (rm_title($title, $id)){
         output("Powinno bylo zadzialac");
+      } else {
+        output("`yLOL");
       }
     } else {
       // TODO: smierc hakierowi tudziez email do adminow

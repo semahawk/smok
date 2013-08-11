@@ -470,8 +470,11 @@ function eq_run()
        * osiągnął limitu */
       $limit_exceeded = 0;
       $s = db_fetch_assoc(db_query("SELECT count(*) as sum FROM " . db_prefix("accounts_eqstones") . " WHERE acctid = '" . $session['user']['acctid'] . "' AND onsale = 1"));
-      /* TODO: jak będzie ten status donatora, to tutaj trza będzie pomiąchać */
-      if ($s['sum'] >= 5){
+      $m = 1; /* limit multiplier */
+      if (is_module_installed('donator') && get_module_pref('isdonator', 'donator')){
+        $m = 3;
+      }
+      if ($s['sum'] >= 5 * $m){
         $limit_exceeded = 1;
       }
 

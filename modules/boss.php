@@ -99,7 +99,6 @@ function boss_install()
 
 function boss_uninstall()
 {
-  $sql = "DROP TABLE IF EXISTS " . db_prefix("bosses") . ";";
   db_query($sql);
 
   return true;

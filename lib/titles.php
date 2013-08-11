@@ -71,4 +71,57 @@ function get_dk_title($dks, $gender, $ref=false)
 		return $row['female'];
 }
 
+/*
+ * Ciuf below
+ *
+ */
+
+/*
+ * Add a custom <title> (for a <reason>).
+ * If the user already has that title, nothing happens.
+ *
+ * Return: 1
+ */
+function add_title($title, $reason, $acctid)
+{
+  if (is_module_installed('titles') && is_module_active('titles')){
+    $titles = unserialize(get_module_pref('titles', 'titles', $acctid));
+
+    if ($titles === false){
+      $titles = array();
+    }
+
+    if (!isset($titles[$title])){
+      $titles[$title] = $reason;
+      set_module_pref('titles', serialize($titles), 'titles', $acctid);
+    }
+
+    return 1;
+  }
+}
+
+/*
+ * Remove given <title> from users titles list.
+ *
+ * Return: 0 on error
+ *         1 on success
+ */
+function rm_title($title, $acctid)
+{
+  if (is_module_installed('titles') && is_module_active('titles')){
+    $titles = unserialize(get_module_pref('titles', 'titles', $acctid));
+
+    if ($titles === false)
+      return 0;
+
+    if (!isset($titles[$title]))
+      return 0;
+
+    unset($titles[$title]);
+    set_module_pref('titles', serialize($titles), 'titles', $acctid);
+
+    return 1;
+  }
+}
+
 ?>
