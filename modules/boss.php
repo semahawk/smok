@@ -35,11 +35,11 @@ function boss_getmoduleinfo()
     "prefs" => array (
       "Walka z bossem,title",
       "bosscurr" => "The boss' 'num' that the user will be fighting,int|-1",
-      "bossname" => "Name of the boss user would be fighting,text|Pierwszy boss",
-      "bossweapon" => "The boss' weapon,text|Bron pierwszego bossa",
-      "bossdesc_before" => "The boss' text before beating him,text|Opis przed pierwszym bossem",
-      "bossdesc_after" => "The boss' text after beating the crap out of him,text|Opis po pierwszym bossie",
-      "bosslocation" => "The boss' specific village in which it is to be seen,text|Romar",
+      "bossname" => "Name of the boss user would be fighting,text|`LNo`vcn`Vy Po`vmi`Lot `)`0",
+      "bossweapon" => "The boss' weapon,text|`i`jSe`)nn`7e Kos`)zma`jry`i`0",
+      "bossdesc_before" => "The boss' text before beating him,text|`7Chcia³e¶ siê zakra¶ć do bestii, wzi±ć j± z zaskoczenia, lecz Nocny Pomiot odwróci³ siê w Twoim kierunku, sycz±c w¶ciekle i pokazuj±c dwa rzêdy ostrych, po¿ó³k³ych zêbisk. Jego cia³o pokrywa³a szarofioletowa skóra w nieco ciemniejsze, sinogranatowe cêtki, a szmaragdowe, ¶wiec±ce ¶lepia lustrowa³y Ciê gniewnie. ¶widruj±cy wzrok zdawa³ siê wgryzać w umys³. Stwór mia³ góra metr piêćdziesi±t wzrostu, zapewne w kapeluszu, którego akurat nie posiada³, ale by³ szpetny niczym najbrzydsza noc, nie mia³ ¿adnych w³osów, a z czo³a wyrasta³y mu dwa kilkucentymetrowe ró¿ki. Drapn±³ d³oni± uzbrojon± w d³ugie pazury o ziemiê i zaatakowa³ Twój umys³.`0",
+      "bossdesc_after" => "The boss' text after beating the crap out of him,text|`7Walka wbrew pozorom nie by³a a¿ taka trudna. Koszmary rozwia³y siê w powietrzu tak prêdko jak przysz³y, a Nocny Pomiot wyda³ z siebie dziwny dŒwiêk bêd±cy prawdopodobnie po³±czeniem wrzasku z bulgotaniem. Pad³ na ziemiê, patrz±c na Ciebie umêczonym wzrokiem. Postanowi³e¶ skrócić mêki bestii i wbi³e¶ ostrze w gard³o poczwary. ¶wiec±ce ¶lepia przygas³y nagle, posadzka pokry³a siê jasnofioletow± ciecz± - krwi± stworzenia. Parê sekund póŒniej cia³o Pomiotu zaczê³o robić siê jakby coraz bardziej kruche i przezroczyste, a¿ w koñcu zamieni³o siê w popió³ nasi±kaj±cy krwi±.`0",
+      "bosslocation" => "The boss' specific village in which it is to be seen,location|Deus Nocturnem",
       "has_the_pokeball" => "Whether the user has found the 'pokeball',bool|0",
     )
   );
@@ -59,8 +59,6 @@ function boss_install()
 
 function boss_uninstall()
 {
-  db_query($sql);
-
   return true;
 }
 
@@ -109,14 +107,14 @@ function boss_dohook($hookname, $args)
       if (get_module_pref("has_the_pokeball") == 0){
         if ($session['user']['level'] >= 15){
           if (get_module_setting("pokeball_walker")){
-            /* pokeball wędrownik
-             * sprawdzamy czy jesteśmy w tym mieście co i ów pokeball */
+            /* pokeball wêdrownik
+             * sprawdzamy czy jeste¶my w tym mie¶cie co i ów pokeball */
             if ($session['user']['location'] == get_module_setting("pokeball_location")){
               $canshoot = true;
             }
           } else {
-            /* pokeball nie jest wędrownikiem
-             * więc jest w tym samym mieście co i boss */
+            /* pokeball nie jest wêdrownikiem
+             * wiêc jest w tym samym mie¶cie co i boss */
             if ($session['user']['location'] == get_module_pref("bosslocation")){
               $canshoot = true;
             }
@@ -128,9 +126,9 @@ function boss_dohook($hookname, $args)
           output("`n`e[FIXME] `GBRAWO! `EOdnajdujesz pokeballa!`n`n");
           set_module_pref("has_the_pokeball", 1);
           if (get_module_setting("pokeball_walker")){
-            // <s>Hmm, powinno działać</s>
+            // <s>Hmm, powinno dzia³ać</s>
             //         WRONG!
-            //         Nie działa, lol
+            //         Nie dzia³a, lol
             $current_location = get_module_setting("pokeball_location");
             $cities = array(
               "Dendralium",
@@ -389,7 +387,7 @@ function boss_run()
 }
 
 /*
- * Zapisuje w sesji bossa który bądź jest w prefach, a jeśli nie, to następnego 
+ * Zapisuje w sesji bossa który b±dŒ jest w prefach, a je¶li nie, to nastêpnego 
  * co jest w kolejce.
  */
 function boss_fetchboss()
@@ -408,7 +406,7 @@ function boss_fetchboss()
     $name = $row['bossname'];
     $weapon = $row['bossweapon'];
   } else {
-    /* wyciągamy bossa z prefów */
+    /* wyci±gamy bossa z prefów */
     $name = get_module_pref("bossname");
     $weapon = get_module_pref("bossweapon");
   }
@@ -467,8 +465,8 @@ function boss_newboss()
   $res = db_query($sql);
   $row = db_fetch_assoc($res);
   if (db_affected_rows() == 0){
-    /* lecimy od początku z kolejką
-     * chociaż, nigdy nie powinniśmy się tutaj dostać.. */
+    /* lecimy od pocz±tku z kolejk±
+     * chocia¿, nigdy nie powinni¶my siê tutaj dostać.. */
     $sql = "SELECT * FROM " . db_prefix("bosses") . " ORDER BY bossid ASC LIMIT 1;";
     $res = db_query($sql);
     $row = db_fetch_assoc($res);
