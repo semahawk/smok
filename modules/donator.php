@@ -57,13 +57,15 @@ function donator_dohook($hookname, $args)
       }
       break;
     case "newday":
-      if (time() > ((int)get_module_pref('since') + 60 * 60 * 24 /*2592000*/ /* 60 * 60 * 24 * 30 */)){
-        output("`EMinelo 30 dni, koniec donatorstwa!");
-        set_module_pref('isdonator', 0);
-        set_module_pref('since', 0);
-        set_module_pref('homereturn', 0);
-        set_module_pref('hidebar', 0);
-        rm_title("`yD`jET`yonator", $session['user']['acctid']);
+      if (get_module_pref('isdonator')){
+        if (time() > ((int)get_module_pref('since') + 60 * 3 /*2592000*/ /* 60 * 60 * 24 * 30 */)){
+          output("`n`EMinelo 30 dni, koniec donatorstwa!`n`n");
+          set_module_pref('isdonator', 0);
+          set_module_pref('since', 0);
+          set_module_pref('homereturn', 0);
+          set_module_pref('hidebar', 0);
+          rm_title("`yD`jET`yonator", $session['user']['acctid']);
+        }
       }
       break;
   }
@@ -101,7 +103,7 @@ function donator_run()
       add_title("`yD`jET`yonator", "Kupno statusu donatora", $session['user']['acctid']);
       $session['user']['donationspent'] += $price;
     } else {
-      output("`ENie stac cie!");
+      output("`ENie stac cie! niahniahniah");
     }
   }
 
