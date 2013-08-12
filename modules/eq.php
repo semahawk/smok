@@ -284,13 +284,13 @@ function eq_run()
     $session['user']['maxhitpoints'] = $session['user']['maxhitpoints'] - $item['hpimpact'];
 
     if ($item['cat'] == EQ_WEAPON){
-      $session['user']['weapon'] = "";
+      $session['user']['weapon'] = "Lapska";
       $session['user']['weapondmg'] = 0;
-      db_query("UPDATE " . db_prefix("accounts") . " SET weapon = '', attack = " . $session['user']['attack'] . ", weapondmg = 0, maxhitpoints = " . $session['user']['maxhitpoints'] . " WHERE acctid = " . $session['user']['acctid'] . " LIMIT 1");
+      db_query("UPDATE " . db_prefix("accounts") . " SET weapon = 'Lapska', attack = " . $session['user']['attack'] . ", weapondmg = 0, maxhitpoints = " . $session['user']['maxhitpoints'] . " WHERE acctid = " . $session['user']['acctid'] . " LIMIT 1");
     } else {
-      $session['user']['armor'] = "";
+      $session['user']['armor'] = "Koszula";
       $session['user']['armordef'] = 0;
-      db_query("UPDATE " . db_prefix("accounts") . " SET armor = '', defense = " . $session['user']['defense'] . ", armordef = 0, maxhitpoints = " . $session['user']['maxhitpoints'] . " WHERE acctid = " . $session['user']['acctid'] . " LIMIT 1");
+      db_query("UPDATE " . db_prefix("accounts") . " SET armor = 'Koszula', defense = " . $session['user']['defense'] . ", armordef = 0, maxhitpoints = " . $session['user']['maxhitpoints'] . " WHERE acctid = " . $session['user']['acctid'] . " LIMIT 1");
     }
 
     db_query("UPDATE " . db_prefix("accounts_eqitems") . " SET equipped = 0 WHERE acctid = '" . $session['user']['acctid'] . "' AND itemid = '$id' AND equipped = 1 LIMIT 1");
