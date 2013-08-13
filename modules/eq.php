@@ -620,7 +620,7 @@ function eq_run()
               /* db_insert_id() robi.. o to: Get the ID generated in the last query */
               db_query("INSERT INTO " . db_prefix("accounts_eqitems") . "(acctid, itemid, implvl) values('".$session['user']['acctid']."', '" . db_insert_id() . "', '" . ($item['implvl'] + 1) . "')");
               /* teraz jeszcze trzeba usunac ten poprzedni itemek */
-              db_query("DELETE FROM " . db_prefix("accounts_eqitems") . " WHERE itemid = '" . $item['id'] . "' LIMIT 1");
+              db_query("DELETE FROM " . db_prefix("accounts_eqitems") . " WHERE itemid = '" . $item['id'] . "' AND acctid = '{$session['user']['acctid']}' LIMIT 1");
               /* oooraz kamień którym się itemek ulepszało */
               /* megauser do testów */
               if (!($session['user']['superuser'] & SU_MEGAUSER)){
